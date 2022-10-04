@@ -12,6 +12,7 @@ Example:
 import argparse
 import copy
 import os
+from time import time
 
 import numpy as np
 import scipy
@@ -21,7 +22,6 @@ from torch.utils import data
 
 from loader import get_dataloader
 from models import get_model, load_pretrained
-from models.likelihood_regret import LikelihoodRegret_v2
 from utils import batch_run, parse_nested_args, parse_unknown_args, roc_btw_arr
 
 parser = argparse.ArgumentParser()
@@ -49,12 +49,16 @@ parser.add_argument(
     help="inlier dataset dataset",
 )
 parser.add_argument(
-    "--aug", type=str, help="pre-defiend data augmentation", choices=[None, "CIFAR10"]
+    "--aug",
+    type=str,
+    help="pre-defiend data augmentation",
+    choices=["None", "CIFAR10"],
+    default="None",
+)
+parser.add_argument(
+    "--split", type=str, help="test dataset split", choices=["test", "val"]
 )
 parser.add_argument("--method", type=str, choices=[None, "outlier_exposure"])
-parser.add_argument(
-    "--testdataset", type=str, choices=["CelebA_OOD"], help="add test OOD dataset"
-)
 args, unknown = parser.parse_known_args()
 d_cmd_cfg = parse_unknown_args(unknown)
 d_cmd_cfg = parse_nested_args(d_cmd_cfg)
@@ -70,8 +74,6 @@ else:
 
 print(f"loading from {ckpt_file}")
 l_ood = [s.strip() for s in args.ood.split(",")]
-if args.testdataset is not None:
-    l_ood.append(args.testdataset)
 device = f"cuda:{args.device}"
 
 print(f"loading from : {ckpt_file}")
@@ -98,10 +100,18 @@ data_dict = {
     "channel": channel,
     "batch_size": 64,
     "n_workers": 4,
-    "split": "evaluation",
+    # "split": "evaluation",
     #              'split': 'validation',
     "path": "datasets",
 }
+
+# choose split
+if args.split == "val":
+    data_dict["split"] = "validation"
+else:
+    data_dict["split"] = "evaluation"
+
+# choose preprocessing
 if args.aug == "CIFAR10":
     if args.method == "outlier_exposure":
         augmentations = {
@@ -125,26 +135,12 @@ data_dict_["dataset"] = args.dataset
 in_dl = get_dataloader(data_dict_)
 
 l_ood_dl = []
-if args.testdataset is not None:
-    d_data = {}
-    for idx, ood_name in enumerate(l_ood):
-        data_dict_ = copy.copy(data_dict)
-        data_dict_["dataset"] = ood_name
-        key = "concat" + str(idx)
-        d_data[key] = data_dict_
-    d_data["batch_size"] = 64
-    d_data["n_workers"] = 4
-    if args.aug in ["CIFAR10"]:
-        d_data["dequant"] = data_dict["dequant"]
-    dl = get_dataloader(d_data)
+for ood_name in l_ood:
+    data_dict_ = copy.copy(data_dict)
+    data_dict_["dataset"] = ood_name
+    dl = get_dataloader(data_dict_)
+    dl.name = ood_name
     l_ood_dl.append(dl)
-else:
-    for ood_name in l_ood:
-        data_dict_ = copy.copy(data_dict)
-        data_dict_["dataset"] = ood_name
-        dl = get_dataloader(data_dict_)
-        dl.name = ood_name
-        l_ood_dl.append(dl)
 
 
 # load model
@@ -176,7 +172,6 @@ else:
 model.to(device)
 
 # generate file containing AUC performance
-from time import time
 
 time_s = time()
 in_pred = batch_run(model, in_dl, device=device, no_grad=False)
@@ -220,16 +215,9 @@ for pred in l_ood_pred:
     l_ood_auc.append(roc_btw_arr(pred, in_pred))
 print(l_ood_auc)
 
-if args.testdataset is not None:
-    ood_name = "auc_"
-    for test in l_ood:
-        ood_name += test + "_"
+for ood_name, auc in zip(l_ood, l_ood_auc):
     with open(os.path.join(result_dir, f"{ood_name}.txt"), "w") as f:
-        f.write(str(l_ood_auc[0]))
-else:
-    for ood_name, auc in zip(l_ood, l_ood_auc):
-        with open(os.path.join(result_dir, f"{ood_name}.txt"), "w") as f:
-            f.write(str(auc))
+        f.write(str(auc))
 
 # print('out_rank',out_rank_list[:10])
 # if args.testdataset is not None:
