@@ -142,10 +142,60 @@ svhn_stylegan2_gen = (
     "model=G_ema-best-weights-step=188000.pth",
     {},
 )
+svhn_stylegan2_gen_ada_test_z16 = (
+    "svhn_stylegan2/ada_test_z16",
+    "generator.yml",
+    "model=G_ema-current-weights-step=200000.pth",
+    {},
+)
+svhn_stylegan2_gen_ada_test_z32 = (
+    "svhn_stylegan2/ada_test_z32",
+    "generator.yml",
+    "model=G_ema-current-weights-step=200000.pth",
+    {},
+)
+svhn_stylegan2_gen_ada_test_z64 = (
+    "svhn_stylegan2/ada_test_z64",
+    "generator.yml",
+    "model=G_ema-current-weights-step=200000.pth",
+    {},
+)
+svhn_stylegan2_gen_ada_test_z512 = (
+    "svhn_stylegan2/ada_test_z512",
+    "generator.yml",
+    "model=G_ema-current-weights-step=200000.pth",
+    {},
+)
+
+
 celeba32_stylegan2_gen = (
     "celeba32_stylegan2/z64",
     "generator.yml",
     "model=G_ema-best-weights-step=194000.pth",
+    {},
+)
+celeba32_stylegan2_gen_ada_test_z16 = (
+    "celeba32_stylegan2/ada_test_z16",
+    "generator.yml",
+    "model=G_ema-current-weights-step=200000.pth",
+    {},
+)
+celeba32_stylegan2_gen_ada_test_z32 = (
+    "celeba32_stylegan2/ada_test_z32",
+    "generator.yml",
+    "model=G_ema-current-weights-step=200000.pth",
+    {},
+)
+celeba32_stylegan2_gen_ada_test_z64 = (
+    "celeba32_stylegan2/ada_test_z64",
+    "generator.yml",
+    "model=G_ema-current-weights-step=200000.pth",
+    {},
+)
+celeba32_stylegan2_gen_ada_test_z512 = (
+    "celeba32_stylegan2/ada_test_z512",
+    "generator.yml",
+    "model=G_ema-current-weights-step=200000.pth",
     {},
 )
 
@@ -182,7 +232,15 @@ l_setting = [
     cifar_ood_good_oe,
     cifar_ood_good_plain,
     svhn_stylegan2_gen,
+    svhn_stylegan2_gen_ada_test_z16,
+    svhn_stylegan2_gen_ada_test_z32,
+    svhn_stylegan2_gen_ada_test_z64,
+    svhn_stylegan2_gen_ada_test_z512,
     celeba32_stylegan2_gen,
+    celeba32_stylegan2_gen_ada_test_z16,
+    celeba32_stylegan2_gen_ada_test_z32,
+    celeba32_stylegan2_gen_ada_test_z64,
+    celeba32_stylegan2_gen_ada_test_z512,
     cifar_ood_atom,
     cifar_ood_rowl,
     cifar_ood_due,
