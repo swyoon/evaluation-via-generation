@@ -1,0 +1,10 @@
+detector:
+  identifier: cifar_ood_csi
+  config_file: csi.yml
+  ckpt_file: 'Null'
+  model_path: cifar10_unlabeled.model
+  shift_path: feats_10_resize_fix_0.54_cifar10_train_shift.pth
+  simclr_path: feats_10_resize_fix_0.54_cifar10_train_simclr.pth
+detector_aug: null
+detector_no_grad: True 
+alias: csi

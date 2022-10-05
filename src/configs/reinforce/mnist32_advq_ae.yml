@@ -1,0 +1,37 @@
+advdist:
+  name: advq
+  T: 1.
+  model:
+    arch: rnnlm 
+    input_shape: [4, 4]
+    hidden_size: 128
+    K: 10
+  vqvae:
+    identifier: mnist32_ood_vqvae/K10_4x4
+    config_file: K10_4x4.yml
+    ckpt_file: model_epoch_280.pkl
+detector:
+  identifier: mnist32_ood_ae/z32
+  config_file: z32.yml
+  ckpt_file: model_epoch_300.pkl
+  kwargs:
+data:
+  indist_train:
+      dataset: MNISTpad_OOD 
+      path: datasets
+      batch_size: 128
+      n_workers: 8
+      split: validation 
+      shuffle: true
+      dequant:
+        UniformDequantize: {}
+logger: base
+training:
+  n_iter: 20000
+  batch_size: 64
+  print_interval: 100
+  val_interval: 100
+  save_interval: 5000
+  optimizer:
+    name: adam
+    lr: 1e-4

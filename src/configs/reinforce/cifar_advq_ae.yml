@@ -1,0 +1,40 @@
+advdist:
+  name: advq
+  T: 1.
+  model:
+    arch: rnnlm 
+    input_shape: [4, 4]
+    hidden_size: 128
+    K: 10
+  vqvae:
+    identifier: cifar_vqvae/K10_4x4
+    config_file: K10_4x4.yml
+    ckpt_file: model_epoch_280.pkl
+detector:
+  identifier: cifar_ood_ae/ghosh_z128
+  config_file: ghosh_z128.yml
+  ckpt_file: model_best.pkl
+  kwargs:
+data:
+  indist_train:
+      dataset: CIFAR10_OOD 
+      path: datasets
+      batch_size: 128
+      n_workers: 8
+      split: training
+      shuffle: true
+      augmentations:
+        hflip:
+          p: 0.5
+      dequant:
+        UniformDequantize: {}
+logger: base
+training:
+  n_iter: 200000
+  batch_size: 64
+  print_interval: 100
+  val_interval: 100
+  save_interval: 5000
+  optimizer:
+    name: adam
+    lr: 1e-4

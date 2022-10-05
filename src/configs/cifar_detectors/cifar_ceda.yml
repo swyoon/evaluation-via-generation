@@ -1,0 +1,7 @@
+detector:
+  identifier: cifar_ood_good/ceda
+  config_file: good.yml
+  ckpt_file: CEDA.pt
+detector_aug: null
+detector_no_grad: True 
+alias: ceda

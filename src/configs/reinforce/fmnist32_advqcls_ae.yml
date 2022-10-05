@@ -1,0 +1,43 @@
+advdist:
+  name: advq
+  T: 1.
+  classifier_thres : 0.9
+  model:
+    arch: rnnlm 
+    input_shape: [4, 4]
+    hidden_size: 128
+    K: 10
+  vqvae:
+    identifier: mnist32fmnist32_ood_vqvae/K10_4x4
+    config_file: K10_4x4.yml
+    ckpt_file: model_epoch_280.pkl
+  classifier:
+    identifier: fmnist_v_mnist/res18_lr5
+    config_file: res18.yml
+    ckpt_file: model_best.pkl
+    logit: True
+detector:
+  identifier: fmnist32_ood_vae/z32lik
+  config_file: z32lik.yml
+  ckpt_file: model_epoch_96.pkl
+  kwargs:
+    ood_method: input_complexity
+    ic_type: png
+data:
+  indist_train:
+      dataset: FashionMNISTpad_OOD 
+      path: datasets
+      batch_size: 128
+      n_workers: 8
+      split: validation 
+      shuffle: true
+logger: base
+training:
+  n_iter: 20000
+  batch_size: 64
+  print_interval: 100
+  val_interval: 100
+  save_interval: 5000
+  optimizer:
+    name: adam
+    lr: 1e-4

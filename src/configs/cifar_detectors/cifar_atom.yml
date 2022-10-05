@@ -1,0 +1,7 @@
+detector:
+  identifier: cifar_ood_atom/atom
+  config_file: atom.yml
+  ckpt_file: checkpoint_100.pth.tar
+detector_aug: null
+detector_no_grad: True 
+alias: atom

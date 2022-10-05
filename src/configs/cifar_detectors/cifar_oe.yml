@@ -1,0 +1,12 @@
+detector:
+  identifier: cifar_ood_oe_scratch/allconv
+  config_file: oe_scratch_allconv.yml
+  ckpt_file: cifar10_allconv_oe_scratch_epoch_99.pt
+  network: allconv
+  num_classes: 10
+detector_aug:
+  normalize:
+    mean: [0.4914, 0.4822, 0.4465]
+    std: [0.2471, 0.2435, 0.2615]
+detector_no_grad: True 
+alias: oe

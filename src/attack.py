@@ -39,6 +39,7 @@ parser.add_argument("--config", type=str)
 parser.add_argument("--device", default=0)
 parser.add_argument("--logdir", default="results_attack/")
 parser.add_argument("--run", default=None, help="unique run id of the experiment")
+parser.add_argument("--n_sample", type=int, help="number of samples. None means all")
 parser.add_argument(
     "--idx",
     default=0,
@@ -59,6 +60,7 @@ def detector_normalization(detector, identifier, dataloader, device):
         "pretrained", identifier, f"std_normalization.pkl"
     )
     if os.path.isfile(normalization_path):
+        print(f"Loading normalization from {normalization_path}")
         detector.load_normalization(normalization_path, device)
     else:
         in_score = (
@@ -76,16 +78,12 @@ d_cmd_cfg = parse_unknown_args(unknown)
 d_cmd_cfg = parse_nested_args(d_cmd_cfg)
 print(d_cmd_cfg)
 
-if args.config is not None:
-    cfg = OmegaConf.load(args.config)
-    config_basename = os.path.basename(args.config).split(".")[0]
-else:
-    detector_cfg = OmegaConf.load(args.detector)
-    attack_cfg = OmegaConf.load(args.attack)
-    cfg = OmegaConf.merge(detector_cfg, attack_cfg)
-    detector_basename = os.path.basename(args.detector).split(".")[0]
-    attack_basename = os.path.basename(args.attack).split(".")[0]
-    config_basename = f"{detector_basename}_{attack_basename}"
+detector_cfg = OmegaConf.load(args.detector)
+attack_cfg = OmegaConf.load(args.attack)
+cfg = OmegaConf.merge(detector_cfg, attack_cfg)
+detector_basename = os.path.basename(args.detector).split(".")[0]
+attack_basename = os.path.basename(args.attack).split(".")[0]
+config_basename = f"{detector_basename}_{attack_basename}"
 
 if args.device == "cpu":
     device = f"cpu"
@@ -102,11 +100,9 @@ print(OmegaConf.to_yaml(cfg))
 
 """prepare result directory"""
 run_id = args.run
-logdir = os.path.join(args.logdir, config_basename, str(run_id))
+logdir = os.path.join(args.logdir, str(run_id))
 mkdir_p(logdir)
-tensorboard_dir = os.path.join(
-    args.logdir + "_tensorboard", config_basename, str(run_id)
-)
+tensorboard_dir = os.path.join(args.logdir + "_tensorboard", str(run_id))
 writer_logdir = os.path.join(tensorboard_dir, f"split_{args.idx}")
 writer = SummaryWriter(logdir=writer_logdir)
 print("Result directory: {}".format(logdir))
@@ -135,20 +131,20 @@ if do_ensemble:
     ).detach().cpu().numpy()
     no_grad = detector.no_grad
 else:
-    detector, _ = load_pretrained(**cfg_detector, device=device)
+    detector = get_detector(**cfg_detector, device=device, normalize=True)
+    # detector, _ = load_pretrained(**cfg_detector, device=device)
 
-    if "detector_aug" in cfg:
-        aug = get_composed_augmentations(cfg["detector_aug"])
-    else:
-        aug = None
-    no_grad = cfg.get("detector_no_grad", False)
-    # detector = Detector(detector, bound=3, transform=aug, no_grad=no_grad)
-    detector = Detector(
-        detector, bound=-1, transform=aug, no_grad=no_grad, use_rank=False
-    )
-    detector.to(device)
-    print("Normalizing detector score...")
-    detector_normalization(detector, cfg["detector"]["identifier"], train_dl, device)
+    # if "detector_aug" in cfg:
+    #     aug = get_composed_augmentations(cfg["detector_aug"])
+    # else:
+    #     aug = None
+    # no_grad = cfg.get("detector_no_grad", False)
+    # detector = Detector(
+    #     detector, bound=-1, transform=aug, no_grad=no_grad, use_rank=False
+    # )
+    # detector.to(device)
+    # print("Normalizing detector score...")
+    # detector_normalization(detector, cfg["detector"]["identifier"], train_dl, device)
 advdist.detector = detector
 
 
@@ -178,14 +174,16 @@ else:
 
 """load test OOD dataset"""
 d_eval_data = cfg["data"]["out_eval"]
-if d_eval_data["dataset"] == "SVHN_OOD":
-    # n_testset = 26032
-    n_testset = 5000
-elif d_eval_data["dataset"] == "CelebA_OOD":
-    # n_testset = 19962
-    n_testset = 5000
+if args.n_sample is not None:
+    n_testset = args.n_sample
 else:
-    raise ValueError(f"invalid dataset")
+    if d_eval_data["dataset"] == "SVHN_OOD":
+        n_testset = 26032
+    elif d_eval_data["dataset"] == "CelebA_OOD":
+        n_testset = 19962
+    else:
+        raise ValueError(f"invalid dataset")
+    print(f'Using the whole test set of {d_eval_data["dataset"]}: {n_testset}')
 
 batch_size = d_eval_data["batch_size"]
 n_batch = np.ceil(n_testset / batch_size)

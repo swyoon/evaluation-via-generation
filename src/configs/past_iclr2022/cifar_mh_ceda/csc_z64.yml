@@ -1,0 +1,39 @@
+advdist:
+  name: adae
+  T: 0.1
+  classifier_thres : 0.5
+  model: 'mh'
+  z_shape: [64, 1, 1]
+  stepsize: 0.1
+  n_step: 2000
+  z_bound: 1
+  ae:
+    identifier: cifarsvhnceleba_ood_ae/z64
+    config_file: z64.yml
+    ckpt_file: model_epoch_500.pkl
+  classifier:
+    identifier: cifar_v_svhnceleba/res50
+    config_file: res50.yml
+    ckpt_file: model_best.pkl
+detector:
+  identifier: cifar_ood_good
+  config_file: good.yml
+  ckpt_file: CEDA.pt
+detector_aug: null
+detector_no_grad: True 
+data:
+  indist_val:
+      dataset: CIFAR10_OOD 
+      path: datasets
+      batch_size: 128
+      n_workers: 8
+      split: validation 
+  indist_test:
+      dataset: CIFAR10_OOD 
+      path: datasets
+      batch_size: 128
+      n_workers: 8
+      split: evaluation 
+attack:
+  n_sample: 6000
+  batch_size: 250

@@ -59,32 +59,9 @@ def test_detector():
 
     ds = TensorDataset(x, y)
     dl = DataLoader(ds)
-    detector.learn_normalization(dataloader=dl)
-    print(detector.mean, detector.std)
 
     score = detector.predict(x)
     assert score.shape == (10,)
-    assert (score.mean() - 0.0) ** 2 < 1e-2
-
-
-def test_detector_rank():
-    model = DummyDetector()
-    x = torch.randn(10, 2, dtype=torch.float)
-    y = torch.randn(10, 1)  # dummy y variable
-
-    def normalize(x):
-        return (x - 1) / 0.5
-
-    detector = Detector(model, transform=normalize, use_rank=True)
-
-    ds = TensorDataset(x, y)
-    dl = DataLoader(ds)
-    detector.learn_normalization(dataloader=dl)
-    print(detector.mean, detector.std)
-
-    score = detector.predict(x)
-    assert score.min() >= -1
-    assert score.max() <= 1
 
 
 # def test_from_cfg():

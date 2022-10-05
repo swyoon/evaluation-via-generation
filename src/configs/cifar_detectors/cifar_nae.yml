@@ -1,0 +1,7 @@
+detector:
+  identifier: cifar_ood_nae/z32gn
+  config_file: z32gn.yml
+  ckpt_file: nae_8.pkl
+detector_aug: null
+detector_no_grad: True 
+alias: nae

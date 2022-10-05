@@ -1,0 +1,61 @@
+advdist:
+  name: adae
+  T: 0.1
+  classifier_thres : 0.5
+  model: 'mh'
+  z_shape: [32, 1, 1]
+  stepsize: 0.1
+  n_step: 2000
+  z_bound: 1
+  ae:
+    identifier: cifarsvhnceleba_ood_ae/z32
+    config_file: z32.yml
+    ckpt_file: model_epoch_500.pkl
+  classifier:
+    identifier: cifar_v_svhnceleba/res50
+    config_file: res50.yml
+    ckpt_file: model_best.pkl
+detector:
+  ensemble1: 
+    identifier: cifar_ood_md/md_resnet
+    config_file: md_resnet_cifar.yml
+    ckpt_file: resnet_cifar10.pth
+    lr_tuned_with: SVHN_OOD
+    detector_aug:
+      normalize:
+        mean: [0.4914, 0.4822, 0.4465]
+        std: [0.2023, 0.1994, 0.2010]
+    detector_no_grad: False 
+  ensemble2:
+    identifier: cifar_ood_nae/z32gn
+    config_file: z32gn.yml
+    ckpt_file: nae_8.pkl
+    detector_aug: null
+    detector_no_grad: true 
+  ensemble3:
+    identifier: cifar_ood_oe_scratch/allconv
+    config_file: oe_scratch_allconv.yml
+    ckpt_file: cifar10_allconv_oe_scratch_epoch_99.pt
+    network: allconv
+    num_classes: 10
+    detector_aug:
+      normalize:
+        mean: [0.4914, 0.4822, 0.4465]
+        std: [0.2471, 0.2435, 0.2615]
+    detector_no_grad: True 
+data:
+  indist_val:
+      dataset: CIFAR10_OOD 
+      path: datasets
+      batch_size: 128
+      n_workers: 8
+      split: validation 
+  indist_test:
+      dataset: CIFAR10_OOD 
+      path: datasets
+      batch_size: 128
+      n_workers: 8
+      split: evaluation 
+attack:
+  n_sample: 10000 
+  batch_size: 250

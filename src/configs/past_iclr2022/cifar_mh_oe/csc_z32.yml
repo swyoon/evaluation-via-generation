@@ -1,0 +1,57 @@
+advdist:
+  name: adae
+  T: 0.1
+  classifier_thres_logit : -7.5
+  model: 'mh'
+  z_shape: [32, 1, 1]
+  stepsize: 0.1
+  n_step: 10000
+  z_bound: 1
+  ae:
+    identifier: cifarsvhnceleba_ood_ae/z32nh8
+    config_file: z32.yml
+    ckpt_file: model_epoch_300.pkl
+  classifier:
+    identifier: cifar_v_svhnceleba/res50
+    config_file: res50.yml
+    ckpt_file: model_best.pkl
+    testtimeaug: True
+detector:
+  identifier: cifar_ood_oe_scratch/allconv
+  config_file: oe_scratch_allconv.yml
+  ckpt_file: cifar10_allconv_oe_scratch_epoch_99.pt
+  network: allconv
+  num_classes: 10
+detector_aug:
+  normalize:
+    mean: [0.4914, 0.4822, 0.4465]
+    std: [0.2471, 0.2435, 0.2615]
+detector_no_grad: True 
+data:
+  indist_val:
+      dataset: CIFAR10_OOD 
+      path: datasets
+      batch_size: 128
+      n_workers: 8
+      split: validation 
+  indist_test:
+      dataset: CIFAR10_OOD 
+      path: datasets
+      batch_size: 128
+      n_workers: 8
+      split: evaluation 
+  out_val:
+    concat1:
+      dataset: SVHN_OOD 
+      path: datasets
+      split: validation 
+    concat2:
+      dataset: CelebA_OOD
+      path: datasets
+      split: validation 
+      size: 32
+    batch_size: 128
+    n_workers: 4
+attack:
+  n_sample: 1000
+  batch_size: 250

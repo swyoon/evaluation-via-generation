@@ -1,0 +1,49 @@
+advdist:
+  name: adae
+  T: 0.1
+  classifier_thres_logit : -1
+  classifier_mean: [0.4914, 0.4822, 0.4465]
+  classifier_std: [0.2023, 0.1994, 0.2010]
+  model: 'mh'
+  z_shape: [32, 1, 1]
+  stepsize: 0.1
+  n_step: 10000
+  z_bound: 1
+  ae:
+    identifier: celeba32_ood_ae/z32nh8
+    config_file: z32nh8.yml
+    ckpt_file: model_epoch_300.pkl
+  classifier:
+    identifier: cifar_v_celeba32/res50norm
+    config_file: res50norm.yml
+    ckpt_file: model_epoch_50.pkl
+    testtimeaug: True
+detector:
+  identifier: cifar_ood_good
+  config_file: good.yml
+  ckpt_file: CEDA.pt
+detector_aug: null
+detector_no_grad: True 
+data:
+  indist_val:
+    dataset: CIFAR10_OOD 
+    path: datasets
+    split: validation 
+    batch_size: 128
+    n_workers: 4
+  indist_test:
+    dataset: CIFAR10_OOD 
+    path: datasets
+    batch_size: 128
+    n_workers: 4
+    split: evaluation 
+  out_val:
+    dataset: CelebA_OOD 
+    path: datasets
+    split: validation 
+    batch_size: 128
+    n_workers: 4
+    size: 32
+attack:
+  n_sample: 1000
+  batch_size: 250

@@ -1,0 +1,10 @@
+detector:
+  identifier: cifar_ood_ssd
+  config_file: ssd.yml
+  ckpt_file: model_best.pth.tar
+detector_aug:
+  normalize:
+    mean: [0.4914, 0.4822, 0.4465]
+    std: [0.202, 0.199, 0.201]
+detector_no_grad: True 
+alias: ssd

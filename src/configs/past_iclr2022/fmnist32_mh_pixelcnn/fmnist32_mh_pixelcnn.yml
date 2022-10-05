@@ -1,0 +1,38 @@
+advdist:
+  name: adae
+  T: 0.1
+  classifier_thres : 0.9
+  model: 'mh'
+  z_shape: [32, 1, 1]
+  stepsize: 0.1
+  n_step: 200
+  z_bound: 1
+  ae:
+    identifier: mnist32fmnist32_ood_ae/z32
+    config_file: z32.yml
+    ckpt_file: model_epoch_300.pkl
+  classifier:
+    identifier: fmnist_v_mnist/res18_lr5
+    config_file: res18.yml
+    ckpt_file: model_best.pkl
+detector:
+  identifier: 'fmnist32_ood_pixelcnn/f80'
+  config_file: 'f80.yml'
+  ckpt_file: 'model_best.pkl'
+data:
+  indist_val:
+      dataset: FashionMNISTpad_OOD 
+      path: datasets
+      batch_size: 128
+      n_workers: 8
+      split: validation 
+  indist_test:
+      dataset: FashionMNISTpad_OOD 
+      path: datasets
+      batch_size: 128
+      n_workers: 8
+      split: evaluation 
+logger: base
+attack:
+  n_sample: 5000
+  batch_size: 250

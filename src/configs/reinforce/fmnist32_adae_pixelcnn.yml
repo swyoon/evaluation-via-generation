@@ -1,0 +1,45 @@
+advdist:
+  name: adae
+  T: 0.5
+  classifier_thres : 0.9
+  model:
+    arch: glow 
+    x_dim: 16 # z_dim
+    x_size: 1
+    hidden_channels: 32 
+    K: 32
+    L: 1
+    actnorm_scale: 1.0
+    flow_permutation: invconv
+    flow_coupling: affineV2 
+    vector_mode: True
+  ae:
+    identifier: mnist32fmnist32_ood_vae/z16_5tanh
+    config_file: z16_5tanh.yml
+    ckpt_file: model_epoch_280.pkl
+  classifier:
+    identifier: fmnist_v_mnist/res18_lr5
+    config_file: res18.yml
+    ckpt_file: model_best.pkl
+    logit: True
+detector:
+  identifier: fmnist32_ood_pixelcnn/f80
+  config_file: f80.yml
+  ckpt_file: model_best.pkl
+data:
+  indist_train:
+      dataset: FashionMNISTpad_OOD 
+      path: datasets
+      batch_size: 32
+      n_workers: 8
+      split: validation 
+logger: base
+training:
+  n_iter: 500
+  batch_size: 32
+  print_interval: 10
+  val_interval: 10
+  save_interval: 5000
+  optimizer:
+    name: adam
+    lr: 1e-4

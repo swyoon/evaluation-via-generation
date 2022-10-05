@@ -1,0 +1,19 @@
+detector:
+  ensemble1: 
+    identifier: cifar_ood_good/acet
+    config_file: good.yml
+    ckpt_file: ACET.pt
+    detector_aug: null
+    detector_no_grad: True 
+  ensemble2:
+    identifier: cifar_ood_good/ceda
+    config_file: good.yml
+    ckpt_file: CEDA.pt
+    detector_aug: null
+    detector_no_grad: true 
+  ensemble3:
+    identifier: cifar_ood_good/good80
+    config_file: good.yml
+    ckpt_file: GOODQ80.pt
+    detector_aug: null
+    detector_no_grad: True 

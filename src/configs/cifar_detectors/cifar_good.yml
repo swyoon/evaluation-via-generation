@@ -1,0 +1,7 @@
+detector:
+  identifier: cifar_ood_good/good80
+  config_file: good.yml
+  ckpt_file: GOODQ80.pt
+detector_aug: null
+detector_no_grad: True 
+alias: good

@@ -33,23 +33,25 @@ def get_sampler(**sampler_cfg):
     return sampler
 
 
-def get_detector(device="cpu", **cfg_detector):
+def get_detector(device="cpu", normalize=False, **cfg_detector):
     d_detector_aug = cfg_detector.pop("detector_aug", None)
     no_grad = cfg_detector.pop("detector_no_grad", True)
-    detector, _ = load_pretrained(**cfg_detector, device=device)
+    indist_dataset = cfg_detector.pop("indist_dataset", "CIFAR10")
+    alias = cfg_detector.pop("alias", None)
+    detector, _ = load_pretrained(**cfg_detector["detector"], device=device)
 
     aug = get_composed_augmentations(d_detector_aug)
     detector = Detector(
         detector, bound=-1, transform=aug, no_grad=no_grad, use_rank=False
     )
     detector.to(device)
-    print("Normalizing detector score...")
 
-    normalization_path = os.path.join(
-        "pretrained", cfg_detector["identifier"], f"std_normalization.pkl"
-    )
-    assert os.path.isfile(normalization_path)  # assume normalization file exists
-    detector.load_normalization(normalization_path, device)
+    if normalize:
+        print("Normalizing detector score...")
+        normalization_path = os.path.join(
+            "results", indist_dataset, alias, f"IN_score.pkl"
+        )
+        detector.load_normalization(normalization_path, device)
     return detector
 
 
@@ -195,47 +197,54 @@ class Detector(nn.Module):
                 normed.clip_(max=self.up_bound)
             return normed
 
-    def learn_normalization(self, dataloader=None, device=None, use_grad=False):
-        """compute normalization parameters for detector score"""
-        l_score = []
-        for xx, _ in tqdm(dataloader):
-            if device is not None:
-                xx = xx.to(device)
-            if use_grad:
-                l_score.append(self.predict(xx, normalize=False).detach())
-            else:
-                try:
-                    with torch.no_grad():
-                        l_score.append(self.predict(xx, normalize=False).detach())
-                except:
-                    l_score.append(self.predict(xx, normalize=False).detach())
-        score = torch.cat(l_score)
-        if self.use_rank:
-            self.in_score = torch.sort(score).values
-        else:
-            mean_score = torch.mean(score)
-            std_score = torch.std(score) + 1e-3
-            self.mean = mean_score
-            self.std = std_score
+    # def learn_normalization(self, dataloader=None, device=None, use_grad=False):
+    #     """compute normalization parameters for detector score"""
+    #     l_score = []
+    #     for xx, _ in tqdm(dataloader):
+    #         if device is not None:
+    #             xx = xx.to(device)
+    #         if use_grad:
+    #             l_score.append(self.predict(xx, normalize=False).detach())
+    #         else:
+    #             try:
+    #                 with torch.no_grad():
+    #                     l_score.append(self.predict(xx, normalize=False).detach())
+    #             except:
+    #                 l_score.append(self.predict(xx, normalize=False).detach())
+    #     score = torch.cat(l_score)
+    #     if self.use_rank:
+    #         self.in_score = torch.sort(score).values
+    #     else:
+    #         mean_score = torch.mean(score)
+    #         std_score = torch.std(score) + 1e-3
+    #         self.mean = mean_score
+    #         self.std = std_score
 
-        normed_score = self.normalize(score)
-        return normed_score
+    #     normed_score = self.normalize(score)
+    #     return normed_score
 
-    def save_normalization(self, norm_path):
-        if self.use_rank:
-            torch.save(self.in_score, norm_path)
-            print("save rank normalization info")
-        else:
-            torch.save([self.mean, self.std], norm_path)
-            print("save std normalization info")
+    # def save_normalization(self, norm_path):
+    #     if self.use_rank:
+    #         torch.save(self.in_score, norm_path)
+    #         print("save rank normalization info")
+    #     else:
+    #         torch.save([self.mean, self.std], norm_path)
+    #         print("save std normalization info")
 
-    def load_normalization(self, norm_path, device):
-        if self.use_rank:
-            self.in_score = torch.load(norm_path, map_location=device)
-            print("load rank normalization info")
-        else:
-            self.mean, self.std = torch.load(norm_path, map_location=device)
-            print("load std normalization info")
+    # def load_normalization(self, norm_path, device):
+    #     if self.use_rank:
+    #         self.in_score = torch.load(norm_path, map_location=device)
+    #         print("load rank normalization info")
+    #     else:
+    #         self.mean, self.std = torch.load(norm_path, map_location=device)
+    #         print("load std normalization info")
+
+    def load_normalization(self, norm_path):
+        in_score = torch.load(norm_path)
+        mean_score = torch.mean(in_score)
+        std_score = torch.std(in_score) + 1e-3
+        self.mean = mean_score
+        self.std = std_score
 
 
 class EnsembleDetector(nn.Module):

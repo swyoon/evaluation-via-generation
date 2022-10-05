@@ -1,0 +1,48 @@
+trainer: dvd 
+logger: base 
+model:
+    arch: resnetcls
+    net: wide_resnet50_2
+    n_class: 1
+    pretrained: True
+data:
+    D0_train:
+        dataset: SVHN_OOD 
+        path: datasets
+        batch_size: 128
+        n_workers: 8
+        split: training
+        shuffle: True
+    D0_val:
+        dataset: SVHN_OOD 
+        path: datasets
+        batch_size: 128
+        n_workers: 8
+        split: validation 
+    D1_train:
+        dataset: CIFAR10_OOD 
+        path: datasets
+        batch_size: 128
+        split: training 
+        n_workers: 8
+        shuffle: True
+        augmentations:
+          hflip:
+            p: 0.5
+    D1_val:
+        dataset: CIFAR10_OOD 
+        size: 128
+        path: datasets
+        batch_size: 128
+        n_workers: 8
+        split: validation
+training:
+    n_epoch: 101
+    optimizer:
+      name: 'adam'
+      lr: 1e-5
+    print_interval: 500
+    val_interval: 2000
+    save_interval: 2000
+    save_only_best: True
+    save_interval_epoch: 5

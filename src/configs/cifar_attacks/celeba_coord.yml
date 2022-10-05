@@ -1,0 +1,32 @@
+advdist:
+  name: adlinf
+  sampler: 
+    name: coord 
+    h: 0.005
+    stepsize: 0.1
+    momentum: 0.999
+    Linf: 0.01
+    n_step: 20000
+    bound: [0, 1]
+    half_every: 2000
+    save_only_min: True
+data:
+  indist_val:
+    dataset: CIFAR10_OOD 
+    path: datasets
+    split: validation 
+    batch_size: 128
+    n_workers: 4
+  indist_test:
+    dataset: CIFAR10_OOD 
+    path: datasets
+    batch_size: 128
+    n_workers: 4
+    split: evaluation 
+  out_eval:
+    dataset: CelebA_OOD 
+    path: datasets
+    split: evaluation 
+    batch_size: 500 
+    n_workers: 4
+    size: 32

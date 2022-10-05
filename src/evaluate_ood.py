@@ -18,20 +18,16 @@ import numpy as np
 import scipy
 import torch
 import yaml
+from omegaconf import OmegaConf
 from torch.utils import data
 
+from attacks import get_detector
 from loader import get_dataloader
 from models import get_model, load_pretrained
-from utils import batch_run, parse_nested_args, parse_unknown_args, roc_btw_arr
+from utils import batch_run, mkdir_p, parse_nested_args, parse_unknown_args, roc_btw_arr
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--resultdir", type=str, help="result dir. results/... or pretrained/..."
-)
-parser.add_argument("--config", type=str, help="config file name")
-parser.add_argument(
-    "--ckpt", type=str, help="checkpoint file name to load. default", default=None
-)
+parser.add_argument("--config", type=str, help="path to detector config")
 parser.add_argument("--ood", type=str, help="list of OOD datasets, separated by comma")
 parser.add_argument("--device", type=str, help="device")
 parser.add_argument(
@@ -40,43 +36,27 @@ parser.add_argument(
     choices=[
         "MNIST_OOD",
         "CIFAR10_OOD",
-        "ImageNet32",
-        "FashionMNIST_OOD",
-        "FashionMNISTpad_OOD",
         "CIFAR100_OOD",
     ],
-    default="MNIST",
     help="inlier dataset dataset",
 )
-parser.add_argument(
-    "--aug",
-    type=str,
-    help="pre-defiend data augmentation",
-    choices=["None", "CIFAR10"],
-    default="None",
-)
+
 parser.add_argument(
     "--split", type=str, help="test dataset split", choices=["test", "val"]
 )
-parser.add_argument("--method", type=str, choices=[None, "outlier_exposure"])
 args, unknown = parser.parse_known_args()
 d_cmd_cfg = parse_unknown_args(unknown)
 d_cmd_cfg = parse_nested_args(d_cmd_cfg)
 
 
-# load config file
-cfg = yaml.load(open(os.path.join(args.resultdir, args.config)), Loader=yaml.FullLoader)
-result_dir = args.resultdir
-if args.ckpt is not None:
-    ckpt_file = os.path.join(result_dir, args.ckpt)
-else:
-    raise ValueError(f"ckpt file not specified")
-
-print(f"loading from {ckpt_file}")
-l_ood = [s.strip() for s in args.ood.split(",")]
+"""load model"""
 device = f"cuda:{args.device}"
+cfg_detector = OmegaConf.load(args.config)
+model = get_detector(**cfg_detector, device=device, normalize=False)
 
-print(f"loading from : {ckpt_file}")
+"""output directory setting"""
+result_dir = os.path.join("results", args.dataset.split("_")[0], cfg_detector.alias)
+mkdir_p(result_dir)
 
 
 def evaluate(m, in_dl, out_dl, device):
@@ -87,7 +67,7 @@ def evaluate(m, in_dl, out_dl, device):
     return auc
 
 
-# load dataset
+"""load dataset"""
 if args.dataset in {"MNIST_OOD", "FashionMNIST_OOD"}:
     size = 28
     channel = 1
@@ -100,9 +80,6 @@ data_dict = {
     "channel": channel,
     "batch_size": 64,
     "n_workers": 4,
-    # "split": "evaluation",
-    #              'split': 'validation',
-    "path": "datasets",
 }
 
 # choose split
@@ -111,29 +88,12 @@ if args.split == "val":
 else:
     data_dict["split"] = "evaluation"
 
-# choose preprocessing
-if args.aug == "CIFAR10":
-    if args.method == "outlier_exposure":
-        augmentations = {
-            "normalize": {
-                "mean": (0.4914, 0.4822, 0.4465),
-                "std": (0.2471, 0.2435, 0.2615),
-            },
-        }
-    else:
-        augmentations = {
-            "normalize": {
-                "mean": (0.4914, 0.4822, 0.4465),
-                "std": (0.2023, 0.1994, 0.2010),
-            },
-        }
-    data_dict["dequant"] = augmentations
-
 
 data_dict_ = copy.copy(data_dict)
 data_dict_["dataset"] = args.dataset
 in_dl = get_dataloader(data_dict_)
 
+l_ood = [s.strip() for s in args.ood.split(",")]
 l_ood_dl = []
 for ood_name in l_ood:
     data_dict_ = copy.copy(data_dict)
@@ -143,36 +103,7 @@ for ood_name in l_ood:
     l_ood_dl.append(dl)
 
 
-# load model
-if args.method == "outlier_exposure":
-    print("loading outlier exposure model from pretrained directory", result_dir)
-    pretrain_identifier = os.path.join(*result_dir.split("/")[1:])
-    kwargs = {"network": "allconv", "num_classes": 10}
-    model, cfg = load_pretrained(
-        pretrain_identifier, args.config, args.ckpt, device=device, **kwargs
-    )
-    model.to(device)
-else:
-    if "pretrained" in result_dir:
-        print("loading from pretrained directory", result_dir)
-        pretrain_identifier = os.path.join(*result_dir.split("/")[1:])
-        model, cfg = load_pretrained(
-            pretrain_identifier, args.config, args.ckpt, device=device, **d_cmd_cfg
-        )
-        model.to(device)
-    else:
-        model = get_model(cfg).to(device)
-        ckpt_data = torch.load(ckpt_file)
-        if "model_state" in ckpt_data:
-            model.load_state_dict(ckpt_data["model_state"])
-        else:
-            model.load_state_dict(torch.load(ckpt_file))
-    model.eval()
-
-model.to(device)
-
-# generate file containing AUC performance
-
+"""Compute AUROC and save results"""
 time_s = time()
 in_pred = batch_run(model, in_dl, device=device, no_grad=False)
 print(f"{time() - time_s:.3f} sec for inlier inference")
@@ -194,6 +125,7 @@ for dl in l_ood_dl:
     sorted_list = np.sort(in_test_score_list)
     out_rank_list = np.searchsorted(sorted_list, out_score_list)
     print(f"MinRank: {out_rank_list.min()}")
+    torch.save(out_rank_list, os.path.join(result_dir, f"OOD_rank_{dl.name}.pkl"))
 
     # idx = np.arange(len(out_rank_list))
     # rng = np.random.default_rng(1)
@@ -229,7 +161,7 @@ for ood_name, auc in zip(l_ood, l_ood_auc):
 #         f.write(str(avg_rank)  + '\n')
 # else:
 #     for ood_name, auc in zip(l_ood, l_ood_auc):
-#         with open(os.path.join(result_dir, f'{ood_name}_rank.txt'), 'w') as f:
+#         with open(os.path.join(model_dir, f'{ood_name}_rank.txt'), 'w') as f:
 #             f.write(str(min_rank)  + '\n')
 #             f.write(str(avg_rank)  + '\n')
 

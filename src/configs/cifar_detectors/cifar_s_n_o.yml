@@ -1,0 +1,28 @@
+detector:
+  agg: max
+  ensemble1: 
+    identifier: cifar_ood_ssd
+    config_file: ssd.yml
+    ckpt_file: model_best.pth.tar
+    detector_aug:
+      normalize:
+        mean: [0.4914, 0.4822, 0.4465]
+        std: [0.202, 0.199, 0.201]
+    detector_no_grad: True 
+  ensemble2:
+    identifier: cifar_ood_nae/z32gn
+    config_file: z32gn.yml
+    ckpt_file: nae_8.pkl
+    detector_aug: null
+    detector_no_grad: true 
+  ensemble3:
+    identifier: cifar_ood_oe_scratch/allconv
+    config_file: oe_scratch_allconv.yml
+    ckpt_file: cifar10_allconv_oe_scratch_epoch_99.pt
+    network: allconv
+    num_classes: 10
+    detector_aug:
+      normalize:
+        mean: [0.4914, 0.4822, 0.4465]
+        std: [0.2471, 0.2435, 0.2615]
+    detector_no_grad: True 
