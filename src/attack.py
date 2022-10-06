@@ -55,24 +55,6 @@ parser.add_argument(
 args, unknown = parser.parse_known_args()
 
 
-def detector_normalization(detector, identifier, dataloader, device):
-    normalization_path = os.path.join(
-        "pretrained", identifier, f"std_normalization.pkl"
-    )
-    if os.path.isfile(normalization_path):
-        print(f"Loading normalization from {normalization_path}")
-        detector.load_normalization(normalization_path, device)
-    else:
-        in_score = (
-            detector.learn_normalization(dataloader=dataloader, device=device)
-            .detach()
-            .cpu()
-            .numpy()
-        )
-        if not do_ensemble:
-            detector.save_normalization(normalization_path)
-
-
 """parse unknown argument"""
 d_cmd_cfg = parse_unknown_args(unknown)
 d_cmd_cfg = parse_nested_args(d_cmd_cfg)
@@ -119,32 +101,33 @@ advdist.sampler.writer = writer
 # advdist.to(device)
 
 """load pretrained model"""
-cfg_detector = cfg["detector"]
-train_dl = get_dataloader(cfg["data"]["indist_val"])
-do_ensemble = any([k.startswith("ensemble") for k in cfg_detector.keys()])
+detector = get_detector(**cfg, normalize=True)
+no_grad = cfg.get("detector_no_grad", False)
+# cfg_detector = cfg["detector"]
+# train_dl = get_dataloader(cfg["data"]["indist_val"])
+# do_ensemble = any([k.startswith("ensemble") for k in cfg_detector.keys()])
+#
+# if do_ensemble:
+#     detector = get_ensemble(device=device, **cfg_detector)
+#     detector.to(device)
+#     detector.learn_normalization(
+#         dataloader=train_dl, device=device
+#     ).detach().cpu().numpy()
+#     no_grad = detector.no_grad
+# else:
+# detector, _ = load_pretrained(**cfg_detector, device=device)
 
-if do_ensemble:
-    detector = get_ensemble(device=device, **cfg_detector)
-    detector.to(device)
-    detector.learn_normalization(
-        dataloader=train_dl, device=device
-    ).detach().cpu().numpy()
-    no_grad = detector.no_grad
-else:
-    detector = get_detector(**cfg_detector, device=device, normalize=True)
-    # detector, _ = load_pretrained(**cfg_detector, device=device)
-
-    # if "detector_aug" in cfg:
-    #     aug = get_composed_augmentations(cfg["detector_aug"])
-    # else:
-    #     aug = None
-    # no_grad = cfg.get("detector_no_grad", False)
-    # detector = Detector(
-    #     detector, bound=-1, transform=aug, no_grad=no_grad, use_rank=False
-    # )
-    # detector.to(device)
-    # print("Normalizing detector score...")
-    # detector_normalization(detector, cfg["detector"]["identifier"], train_dl, device)
+# if "detector_aug" in cfg:
+#     aug = get_composed_augmentations(cfg["detector_aug"])
+# else:
+#     aug = None
+# no_grad = cfg.get("detector_no_grad", False)
+# detector = Detector(
+#     detector, bound=-1, transform=aug, no_grad=no_grad, use_rank=False
+# )
+# detector.to(device)
+# print("Normalizing detector score...")
+# detector_normalization(detector, cfg["detector"]["identifier"], train_dl, device)
 advdist.detector = detector
 
 

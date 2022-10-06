@@ -51,7 +51,7 @@ def get_detector(device="cpu", normalize=False, **cfg_detector):
         normalization_path = os.path.join(
             "results", indist_dataset, alias, f"IN_score.pkl"
         )
-        detector.load_normalization(normalization_path, device)
+        detector.load_normalization(normalization_path, device=device)
     return detector
 
 
@@ -239,12 +239,12 @@ class Detector(nn.Module):
     #         self.mean, self.std = torch.load(norm_path, map_location=device)
     #         print("load std normalization info")
 
-    def load_normalization(self, norm_path):
+    def load_normalization(self, norm_path, device):
         in_score = torch.load(norm_path)
         mean_score = torch.mean(in_score)
         std_score = torch.std(in_score) + 1e-3
-        self.mean = mean_score
-        self.std = std_score
+        self.mean = mean_score.to(device)
+        self.std = std_score.to(device)
 
 
 class EnsembleDetector(nn.Module):
