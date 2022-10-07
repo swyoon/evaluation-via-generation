@@ -784,6 +784,8 @@ def load_pretrained(identifier, config_file, ckpt_file, root="pretrained", **kwa
         return load_pretrained_due(cfg, root, identifier, ckpt_file)
     elif model_name == "sngp":
         return load_pretrained_due(cfg, root, identifier, ckpt_file)
+    elif model_name == "vit":
+        return load_pretrained_vit(cfg, root, identifier, ckpt_file)
     else:
         model = get_model(cfg)
         ckpt = torch.load(ckpt_path, map_location="cpu")
@@ -1166,4 +1168,16 @@ def load_pretrained_due(cfg, root, identifier, ckpt_file, **kwargs):
         net.load_state_dict(torch.load(checkpoint_path, map_location="cpu"))
         model = SNGP(net)
 
+    return model, cfg
+
+
+def load_pretrained_vit(cfg, root, identifier, ckpt_file, **kwargs):
+    from models.ViT.vit_ood import ViT_Maha
+
+    cfg = cfg["model"]
+    cfg.pop("arch")
+    checkpoint = os.path.join(root, identifier, ckpt_file)
+    model = ViT_Maha(**cfg)
+    model.load_state_dict(torch.load(checkpoint)["state_dict"])
+    model.eval()
     return model, cfg

@@ -205,6 +205,13 @@ cifar_ood_rowl = ("cifar_ood_atom/rowl", "rowl.yml", "checkpoint_100.pth.tar", {
 cifar_ood_due = ("cifar_ood_due/due", "due.yml", "due.pt", {})
 cifar_ood_sngp = ("cifar_ood_due/sngp", "sngp.yml", "sngp.pt", {})
 
+cifar100_ood_vit = (
+    "cifar100_ood_vit",
+    "vit.yml",
+    "L_16-i21k-300ep-lr_0.001-aug_strong1-wd_0.1-do_0.0-sd_0.0--cifar100-steps_2k-lr_0.01-res_384.npz",
+    {},
+)
+
 l_setting = [
     cifar_glow,
     cifar_md,
@@ -246,6 +253,7 @@ l_setting = [
     cifar_ood_due,
     cifar_ood_sngp,
 ]
+l_setting = [cifar100_ood_vit]
 
 
 @pytest.mark.parametrize("model_setting", l_setting)
