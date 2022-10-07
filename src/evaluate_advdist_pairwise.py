@@ -126,24 +126,24 @@ auc = roc_btw_arr(out_score, in_test_score)
 print(f"OOD samples: AUC:{auc}")
 
 
-detector_name = os.path.basename(args.detector).split(".")[0]
-target_name = os.path.basename(args.target).split(".")[0]
-result_dir = os.path.join(args.logdir, detector_name)
+# detector_name = os.path.basename(args.detector).split(".")[0]
+# target_name = os.path.basename(args.target).split(".")[0]
+result_dir = args.logdir
 mkdir_p(result_dir)
 
-auc_save_path = os.path.join(result_dir, f"{target_name}_auc.txt")
+auc_save_path = os.path.join(result_dir, f"auc.txt")
 with open(auc_save_path, "w") as f:
     f.write(str(auc))
     print("save auc score", auc_save_path)
 
 """Save samples OOD score"""
-out_score_path = os.path.join(result_dir, f"{target_name}_score.pkl")
+out_score_path = os.path.join(result_dir, f"score.pkl")
 torch.save(out_score, out_score_path)
 
-out_x_path = os.path.join(result_dir, f"{target_name}_x.pkl")
+out_x_path = os.path.join(result_dir, f"sample.pkl")
 torch.save(x_saved_samples, out_x_path)
 
 sorted_in_score = np.sort(in_test_score)
 out_rank = np.searchsorted(sorted_in_score, out_score)
-torch.save(out_rank, os.path.join(result_dir, f"{target_name}_rank.pkl"))
+torch.save(out_rank, os.path.join(result_dir, f"rank.pkl"))
 print("save OOD score of all samples", out_score_path)

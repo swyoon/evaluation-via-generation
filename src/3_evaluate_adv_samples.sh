@@ -9,6 +9,7 @@ dataset=svhn
 # variation=affine
 # variation=colorV1
 variation=stylegan2ada_mh
+variation=stylegan2ada_z32_mh
 mode=pairwise
 # mode=pairwise
 # postfix=v0115
@@ -47,7 +48,7 @@ do
     python evaluate_advdist_pairwise.py \
         --detector configs/cifar_detectors/cifar_${model}.yml \
         --target results/CIFAR10/${target}/${dataset}_${variation}/run/cifar_${target}_${dataset}_${variation}.yml\
-        --logdir results/CIFAR10/pairwise/${dataset}/${variation}\
+        --logdir results/CIFAR10/pairwise/${model}/${target}/${dataset}_${variation}\
         --device ${device}
 
     done
