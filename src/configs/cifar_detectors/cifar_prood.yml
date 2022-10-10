@@ -1,0 +1,7 @@
+detector:
+  identifier: cifar_ood_prood/prood_3
+  config_file: prood_3.yml
+  ckpt_file: prood_3.pt
+detector_aug: null
+detector_no_grad: True 
+alias: prood 

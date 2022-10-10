@@ -2,7 +2,8 @@
 
 # Reproduce OOD detection performance of pretrained models
 device=3
-ood=SVHN_OOD,CelebA_OOD
+# ood=SVHN_OOD,CelebA_OOD
+ood=SVHN_OOD
 configs=(cifar_ae.yml
          cifar_pixelcnn.yml 
          cifar_md.yml
@@ -19,6 +20,9 @@ configs=(cifar_ae.yml
          cifar_due.yml
          cifar_sngp.yml
      )
+configs=(
+    cifar_prood.yml
+    )
 
 for config in "${configs[@]}"; do
    echo ${config}

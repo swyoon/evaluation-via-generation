@@ -786,6 +786,8 @@ def load_pretrained(identifier, config_file, ckpt_file, root="pretrained", **kwa
         return load_pretrained_due(cfg, root, identifier, ckpt_file)
     elif model_name == "vit":
         return load_pretrained_vit(cfg, root, identifier, ckpt_file)
+    elif model_name == "prood":
+        return load_pretrained_prood(cfg, root, identifier, ckpt_file)
     else:
         model = get_model(cfg)
         ckpt = torch.load(ckpt_path, map_location="cpu")
@@ -1179,5 +1181,33 @@ def load_pretrained_vit(cfg, root, identifier, ckpt_file, **kwargs):
     checkpoint = os.path.join(root, identifier, ckpt_file)
     model = ViT_Maha(**cfg)
     model.load_state_dict(torch.load(checkpoint)["state_dict"])
+    model.eval()
+    return model, cfg
+
+
+def load_pretrained_prood(cfg, root, identifier, ckpt_file):
+    from models.prood import Prood
+    from models.prood.models import provable_classifiers, resnet
+
+    cfg = cfg["model"]
+    cfg_detector = cfg["detector"]
+    cfg_classifier = cfg["classifier"]
+    detector = provable_classifiers.CNN_IBP(
+        dset_in_name=cfg_detector.dset_in_name,
+        size=cfg_detector.arch_size,
+        last_bias=cfg_detector.use_last_bias,
+        num_classes=cfg_detector.num_classes,
+        last_layer_neg=cfg_detector.last_layer_neg,
+    )
+
+    if cfg_detector.last_layer_neg and cfg_detector.use_last_bias:
+        with torch.no_grad():
+            detector.layers[-1].bias.data += cfg_detector.bias_shift
+
+    classifier = resnet.get_ResNet(dset=cfg_classifier.dset_in_name)
+    model = Prood(classifier, detector, cfg_classifier.num_classes)
+
+    checkpoint = os.path.join(root, identifier, ckpt_file)
+    model.net.load_state_dict(torch.load(checkpoint, map_location="cpu"))
     model.eval()
     return model, cfg

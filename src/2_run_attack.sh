@@ -2,8 +2,8 @@
 
 CFG_ATT=configs/cifar_attacks
 CFG_DET=configs/cifar_detectors
-DATASET=svhn
-# DATASET=celeba
+# DATASET=svhn
+DATASET=celeba
 # THREAT=affine
 # THREAT=stylegan2_mh
 # for threat in coord affine colorV1 stylegan2_mh;
@@ -13,7 +13,7 @@ do
     split=4
 
     # for model in acet ae ceda csi glow good md nae oe pixelcnn ssd;
-    for model in atom ;
+    for model in prood ;
     do
         for ((idx=0;idx<split;idx++)); do
         echo $model
@@ -26,6 +26,8 @@ do
             --device auto  \
             --data.out_eval.batch_size 250
             # --device $((idx))  \
+
+        sleep 0.1s
         done
     done
 done

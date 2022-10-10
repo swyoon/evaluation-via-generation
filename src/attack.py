@@ -20,9 +20,7 @@ from attacks import Detector, EnsembleDetector, get_advdist, get_detector, get_e
 from augmentations import get_composed_augmentations
 from gpu_utils import AutoGPUAllocation
 from loader import get_dataloader
-from metrics import averageMeter
 from models import load_pretrained
-from optimizers import get_optimizer
 from utils import (
     batch_run,
     mkdir_p,
