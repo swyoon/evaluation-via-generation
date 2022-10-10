@@ -38,7 +38,6 @@ from models.modules import (
     ResNetEncoder101,
     ResNetEncoder152,
 )
-from optimizers import _get_optimizer_instance, get_optimizer
 
 
 class GlobalConvNet(nn.Module):
@@ -1791,68 +1790,6 @@ class VAE_FLOW(VAE):
 
     def log_prior(self, z_sample):
         return self.flow.log_likelihood(z_sample)
-
-
-class VAE_SR(VAE):
-    """VAE with state reification"""
-
-    def __init__(self, encoder, decoder, denoiser, n_sample=1, use_mean=False):
-        super(VAE_SR, self).__init__(
-            encoder, decoder, n_sample=n_sample, use_mean=use_mean
-        )
-        self.denoiser = denoiser
-        self.own_optimizer = True
-
-    def forward(self, x, denoise=True):
-        z = self.encoder(x)
-        z_sample = self.sample_latent(z)
-        z_sample = self.denoiser.denoise(z_sample)
-        return self.decoder(z_sample)
-
-    def train_step(self, x, d_opt):
-        opt_1, opt_2 = d_opt["dgm"], d_opt["denoiser"]
-
-        """Main generative model training"""
-        opt_1.zero_grad()
-        z = self.encoder(x)
-        z_sample = self.sample_latent(z)
-        z_sample = self.denoiser.add_noise(z_sample)
-        z_sample = self.denoiser.denoise(z_sample)
-        nll = -self.decoder.log_likelihood(x, z_sample).mean()
-
-        kl_loss = self.kl_loss(z)
-        loss = nll + kl_loss
-
-        loss.backward()
-        opt_1.step()
-
-        """Denoiser training"""
-        z_sample = self.sample_latent(z).detach()
-        denoise_loss = self.denoiser.train_step(z_sample, opt_2)
-        return {
-            "loss": nll.item(),
-            "kl_loss": kl_loss.item(),
-            "denoise_loss": denoise_loss["loss"].item(),
-        }
-
-    def get_optimizer(self, opt_cfg):
-        # l_dgm_param = list(self.encoder.parameters()) + list(self.decoder.parameters())
-        l_dgm_param = self.parameters()
-        opt_1 = get_optimizer(opt_cfg["dgm"], l_dgm_param)
-        opt_2 = get_optimizer(opt_cfg["denoiser"], self.denoiser.parameters())
-        return {"dgm": opt_1, "denoiser": opt_2}
-
-    def predict(self, x):
-        """one-class anomaly prediction"""
-        l_score = []
-        for i in range(self.n_sample):
-            z = self.encoder(x)
-            z_sample = self.sample_latent(z)
-            # z_sample = self.denoiser.denoise(z_sample)
-            recon_loss = -self.decoder.log_likelihood(x, z_sample)
-            score = recon_loss
-            l_score.append(score)
-        return torch.stack(l_score).mean(dim=0)
 
 
 class VAE_regret(VAE):
