@@ -9,7 +9,7 @@ dataset=svhn
 # variation=affine
 # variation=colorV1
 variation=stylegan2ada_mh
-variation=stylegan2ada_z32_mh
+variation=stylegan2ada_z64_mh
 mode=pairwise
 # mode=pairwise
 # postfix=v0115
@@ -36,12 +36,12 @@ done
 
 else
 
-for model in atom 
+for model in prood 
 # for model in ae pixelcnn glow nae good acet ceda ssd md oe csi 
 # for model in nae good acet ceda ssd md oe csi 
 do
     # for target in nae good acet ceda ssd md atom oe rowl csi 
-    for target in atom 
+    for target in prood
     do
     # target=${model}
 

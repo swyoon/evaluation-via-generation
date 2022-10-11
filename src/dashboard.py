@@ -10,7 +10,7 @@ import pandas as pd
 import streamlit as st
 import torch
 
-l_model = ["atom"]
+l_model = ["atom", "csi", "prood"]
 l_variation = [
     "svhn_stylegan2ada_z16_mh",
     "svhn_stylegan2ada_z32_mh",
