@@ -65,6 +65,7 @@ from models.OE.allconv import AllConvNet
 from models.OE.outlier_exposure import OutlierExposure
 from models.OE.wrn import WideResNet
 from models.pixelcnn import PixelCNN_OC
+from models.ViT import load_pretrained_vit_tf
 
 
 def get_net(in_dim, out_dim, **kwargs):
@@ -784,8 +785,8 @@ def load_pretrained(identifier, config_file, ckpt_file, root="pretrained", **kwa
         return load_pretrained_due(cfg, root, identifier, ckpt_file)
     elif model_name == "sngp":
         return load_pretrained_due(cfg, root, identifier, ckpt_file)
-    elif model_name == "vit":
-        return load_pretrained_vit(cfg, root, identifier, ckpt_file)
+    elif model_name == "vit_tf":
+        return load_pretrained_vit_tf(cfg, root, identifier, ckpt_file)
     elif model_name == "prood":
         return load_pretrained_prood(cfg, root, identifier, ckpt_file)
     else:
@@ -1170,18 +1171,6 @@ def load_pretrained_due(cfg, root, identifier, ckpt_file, **kwargs):
         net.load_state_dict(torch.load(checkpoint_path, map_location="cpu"))
         model = SNGP(net)
 
-    return model, cfg
-
-
-def load_pretrained_vit(cfg, root, identifier, ckpt_file, **kwargs):
-    from models.ViT.vit_ood import ViT_Maha
-
-    cfg = cfg["model"]
-    cfg.pop("arch")
-    checkpoint = os.path.join(root, identifier, ckpt_file)
-    model = ViT_Maha(**cfg)
-    model.load_state_dict(torch.load(checkpoint)["state_dict"])
-    model.eval()
     return model, cfg
 
 

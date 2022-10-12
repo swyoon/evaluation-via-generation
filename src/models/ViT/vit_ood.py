@@ -6,6 +6,7 @@ import shutil
 import sys
 import time
 
+import jax
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -30,8 +31,6 @@ from .vision_transformer.vit_jax.configs import models as models_config
 
 
 tf.config.experimental.set_visible_devices([], "GPU")
-# import tensorflow_datasets as tfds
-from matplotlib import pyplot as plt
 
 
 def get_model():
@@ -127,17 +126,35 @@ class ViT_Maha:
         return out_scores
 
 
-class ViT_Maha_torch:
+import torch.nn as nn
+
+
+class ViT_Maha_torch(nn.Module):
     """wrapper of ViT_Maha for using PyTorch"""
 
     def __init__(self, **kwargs):
+        super().__init__()
         self.model = ViT_Maha(**kwargs)
 
     def predict(self, batch_x):
         assert isinstance(batch_x, torch.Tensor)
         batch_x = batch_x.permute(0, 2, 3, 1)
-        out = self.model.predict(batch_x.detach().numpy())
-        return torch.tensor(np.array(out))
+        torch_device = batch_x.device
+        jax_device = convert_device_torch_to_jax(torch_device)
+        jax_batch_x = jax.device_put(batch_x.detach().cpu().numpy(), jax_device)
+        out = self.model.predict(jax_batch_x)
+        return torch.tensor(np.array(out), device=torch_device)
+
+
+def convert_device_torch_to_jax(device):
+    """Converts a torch device to a jax device
+    device: str, e.g. 'cuda:0'"""
+    if device.type == "cpu":
+        return jax.devices("cpu")[0]
+    elif device.type == ("cuda"):
+        return jax.devices("gpu")[device.index]
+    else:
+        raise ValueError(f"Unknown device type {device.type}")
 
 
 from sklearn.metrics import roc_auc_score

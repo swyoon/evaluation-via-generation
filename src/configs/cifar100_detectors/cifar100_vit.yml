@@ -1,0 +1,7 @@
+detector:
+  identifier: cifar100_ood_vit/L_16
+  config_file: vit.yml
+  ckpt_file: L_16-i21k-300ep-lr_0.001-aug_strong1-wd_0.1-do_0.0-sd_0.0--cifar100-steps_2k-lr_0.01-res_384.npz
+detector_aug: null
+detector_no_grad: True 
+alias: vit 
