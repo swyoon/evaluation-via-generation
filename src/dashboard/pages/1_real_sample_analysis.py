@@ -9,7 +9,7 @@ from torchvision.datasets import SVHN
 
 from loader import get_dataloader
 
-st.title("Inlier visualization")
+st.title("Real sample visualization")
 
 # load image data
 dataset = st.selectbox("Select dataset", ["SVHN", "CIFAR10", "CelebA"])

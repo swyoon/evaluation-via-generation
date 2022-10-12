@@ -1,0 +1,4 @@
+# for ViT
+einops
+flax==0.5.3
+optax

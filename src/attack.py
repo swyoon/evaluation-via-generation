@@ -35,7 +35,7 @@ parser.add_argument("--detector", type=str)
 parser.add_argument("--attack", type=str)
 parser.add_argument("--config", type=str)
 parser.add_argument("--device", default=0)
-parser.add_argument("--logdir", default="results_attack/")
+parser.add_argument("--logdir", default="results/")
 parser.add_argument("--run", default=None, help="unique run id of the experiment")
 parser.add_argument("--n_sample", type=int, help="number of samples. None means all")
 parser.add_argument(
@@ -80,9 +80,15 @@ print(OmegaConf.to_yaml(cfg))
 
 """prepare result directory"""
 run_id = args.run
-logdir = os.path.join(args.logdir, str(run_id))
+result_dir = os.path.join(
+    args.logdir,
+    detector_cfg.get("indist_dataset", "CIFAR10"),
+    detector_cfg["alias"],
+    attack_basename,
+)
+logdir = os.path.join(result_dir, str(run_id))
 mkdir_p(logdir)
-tensorboard_dir = os.path.join(args.logdir + "_tensorboard", str(run_id))
+tensorboard_dir = os.path.join(result_dir + "_tensorboard", str(run_id))
 writer_logdir = os.path.join(tensorboard_dir, f"split_{args.idx}")
 writer = SummaryWriter(logdir=writer_logdir)
 print("Result directory: {}".format(logdir))

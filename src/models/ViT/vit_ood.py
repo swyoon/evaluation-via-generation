@@ -9,7 +9,6 @@ import time
 import jax
 import numpy as np
 import pandas as pd
-import seaborn as sns
 import tensorflow as tf
 import torch
 from absl import logging

@@ -3,7 +3,7 @@
 # Reproduce OOD detection performance of pretrained models
 device=3
 # ood=SVHN_OOD,CelebA_OOD
-ood=SVHN_OOD
+ood=""
 configs=(cifar_ae.yml
          cifar_pixelcnn.yml 
          cifar_md.yml
@@ -19,13 +19,12 @@ configs=(cifar_ae.yml
          cifar_atom.yml
          cifar_due.yml
          cifar_sngp.yml
+         cifar_prood.yml
      )
-configs=(
-    cifar_prood.yml
-    )
 
 for config in "${configs[@]}"; do
    echo ${config}
-    python evaluate_ood.py --dataset CIFAR10_OOD --ood ${ood} \
-        --config configs/cifar_detectors/${config} --device ${device} --split test 
+    # python evaluate_ood.py --dataset CIFAR10_OOD --ood ${ood} \
+    python evaluate_ood.py --dataset CIFAR10_OOD  \
+        --config configs/cifar_detectors/${config} --device ${device} --in_split training_full 
 done

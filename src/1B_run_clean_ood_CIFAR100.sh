@@ -3,7 +3,8 @@
 # Reproduce OOD detection performance of pretrained models
 device=3
 # ood=SVHN_OOD,CelebA_OOD
-ood=SVHN_OOD
+# ood=SVHN_OOD
+ood=CIFAR10_OOD
 configs=(cifar100_vit.yml
      )
 

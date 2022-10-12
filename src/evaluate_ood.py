@@ -28,7 +28,9 @@ from utils import batch_run, mkdir_p, parse_nested_args, parse_unknown_args, roc
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config", type=str, help="path to detector config")
-parser.add_argument("--ood", type=str, help="list of OOD datasets, separated by comma")
+parser.add_argument(
+    "--ood", type=str, help="list of OOD datasets, separated by comma", default=None
+)
 parser.add_argument("--device", type=str, help="device")
 parser.add_argument(
     "--dataset",
@@ -42,7 +44,18 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--split", type=str, help="test dataset split", choices=["test", "val"]
+    "--in_split",
+    type=str,
+    help="inlier dataset split",
+    choices=["training", "validation", "evaluation", "training_full"],
+    default="evaluation",
+)
+parser.add_argument(
+    "--out_split",
+    type=str,
+    help="outlier dataset split",
+    choices=["training", "validation", "evaluation", "training_full"],
+    default="evaluation",
 )
 args, unknown = parser.parse_known_args()
 d_cmd_cfg = parse_unknown_args(unknown)
@@ -82,22 +95,17 @@ data_dict = {
     "n_workers": 4,
 }
 
-# choose split
-if args.split == "val":
-    data_dict["split"] = "validation"
-else:
-    data_dict["split"] = "evaluation"
-
-
 data_dict_ = copy.copy(data_dict)
 data_dict_["dataset"] = args.dataset
+data_dict_["split"] = args.in_split
 in_dl = get_dataloader(data_dict_)
 
-l_ood = [s.strip() for s in args.ood.split(",")]
+l_ood = [s.strip() for s in args.ood.split(",")] if args.ood is not None else []
 l_ood_dl = []
 for ood_name in l_ood:
     data_dict_ = copy.copy(data_dict)
     data_dict_["dataset"] = ood_name
+    data_dict_["split"] = args.out_split
     dl = get_dataloader(data_dict_)
     dl.name = ood_name
     l_ood_dl.append(dl)
@@ -107,11 +115,14 @@ for ood_name in l_ood:
 time_s = time()
 in_pred = batch_run(model, in_dl, device=device, no_grad=False)
 print(f"{time() - time_s:.3f} sec for inlier inference")
-in_score_file = os.path.join(result_dir, f"IN_score.pkl")
+if args.in_split == "evaluation":
+    in_score_file = os.path.join(result_dir, "IN_score.pkl")
+else:
+    in_score_file = os.path.join(result_dir, f"IN_{args.in_split}_score.pkl")
 torch.save(in_pred, in_score_file)
 
 l_ood_pred = []
-for dl in l_ood_dl:
+for ood_name, dl in zip(l_ood, l_ood_dl):
     out_pred = batch_run(model, dl, device=device, no_grad=False)
     l_ood_pred.append(out_pred)
 
@@ -127,42 +138,9 @@ for dl in l_ood_dl:
     print(f"MinRank: {out_rank_list.min()}")
     torch.save(out_rank_list, os.path.join(result_dir, f"OOD_rank_{dl.name}.pkl"))
 
-    # idx = np.arange(len(out_rank_list))
-    # rng = np.random.default_rng(1)
-    # rng.shuffle(idx)
-    # out_rank_list = out_rank_list[idx]
-    # n_split = 5
-    # split_size = len(out_rank_list) // n_split
-    # l_min = []
-    # for i in range(n_split):
-    #     l_min.append((out_rank_list[split_size * i: split_size * (i+1)]).min())
-
-    # avg_minrank = np.mean(l_min)
-    # sem_minrank = scipy.stats.sem(l_min, ddof=0)
-    # print(f'[{dl.name}] AvgMinRank: {avg_minrank}  SemMinRank {sem_minrank}')
-
-
-l_ood_auc = []
-for pred in l_ood_pred:
-    l_ood_auc.append(roc_btw_arr(pred, in_pred))
-print(l_ood_auc)
-
-for ood_name, auc in zip(l_ood, l_ood_auc):
+    auc = roc_btw_arr(out_pred, in_pred)
     with open(os.path.join(result_dir, f"{ood_name}.txt"), "w") as f:
         f.write(str(auc))
-
-# print('out_rank',out_rank_list[:10])
-# if args.testdataset is not None:
-#     ood_name = 'auc_'
-#     for test in l_ood:
-#         ood_name += test + '_'
-#     with open(os.path.join(result_dir, f'{ood_name}_rank.txt'), 'w') as f:
-#         f.write(str(min_rank)  + '\n')
-#         f.write(str(avg_rank)  + '\n')
-# else:
-#     for ood_name, auc in zip(l_ood, l_ood_auc):
-#         with open(os.path.join(model_dir, f'{ood_name}_rank.txt'), 'w') as f:
-#             f.write(str(min_rank)  + '\n')
-#             f.write(str(avg_rank)  + '\n')
+    print(ood_name, auc)
 
 print("")

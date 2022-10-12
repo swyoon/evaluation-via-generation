@@ -5,3 +5,4 @@ detector:
 detector_aug: null
 detector_no_grad: True 
 alias: vit 
+indist_dataset: CIFAR100 
