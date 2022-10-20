@@ -13,10 +13,12 @@ st.title("Real sample visualization")
 
 # load image data
 dataset = st.selectbox("Select dataset", ["SVHN", "CIFAR10", "CelebA"])
+split = st.selectbox("Select split", ["evaluation", "training_full"])
 
 
 @st.cache
 def load_data():
+    global split
     size = 32
     channel = 3
     data_dict = {
@@ -25,7 +27,7 @@ def load_data():
         "channel": channel,
         "batch_size": 64,
         "n_workers": 0,
-        "split": "evaluation",
+        "split": split,
     }
     data_dict["dataset"] = f"{dataset}_OOD"
     ds = get_dataloader(data_dict).dataset
@@ -66,7 +68,10 @@ for detector in l_selected_detector:
     # load inlier score
     inlier_dir = os.path.join("../results/CIFAR10/", detector)
     if dataset == "CIFAR10":
-        score = torch.load(os.path.join(inlier_dir, "IN_score.pkl"))
+        if split == "evaluation":
+            score = torch.load(os.path.join(inlier_dir, "IN_score.pkl"))
+        else:
+            score = torch.load(os.path.join(inlier_dir, "IN_training_full_score.pkl"))
     else:
         score = torch.load(os.path.join(inlier_dir, f"OOD_rank_{dataset}_OOD.pkl"))
     in_sorted_score, in_sorted_idx = torch.sort(torch.tensor(score), descending=True)

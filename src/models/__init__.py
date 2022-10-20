@@ -66,6 +66,7 @@ from models.OE.outlier_exposure import OutlierExposure
 from models.OE.wrn import WideResNet
 from models.pixelcnn import PixelCNN_OC
 from models.ViT import load_pretrained_vit_tf
+from models.ViT_HF import load_pretrained_vit_hf
 
 
 def get_net(in_dim, out_dim, **kwargs):
@@ -787,6 +788,8 @@ def load_pretrained(identifier, config_file, ckpt_file, root="pretrained", **kwa
         return load_pretrained_due(cfg, root, identifier, ckpt_file)
     elif model_name == "vit_tf":
         return load_pretrained_vit_tf(cfg, root, identifier, ckpt_file)
+    elif model_name == "vit_hf":
+        return load_pretrained_vit_hf(cfg, root, identifier, ckpt_file)
     elif model_name == "prood":
         return load_pretrained_prood(cfg, root, identifier, ckpt_file)
     else:

@@ -149,6 +149,13 @@ cifar100_ood_vit = (
     {},
 )
 
+cifar_ood_vit = (
+    "cifar_ood_vit/hf",
+    "vit_md.yml",
+    "pytorch_model.bin",
+    {},
+)
+
 cifar_ood_prood = ("cifar_ood_prood/prood_3", "prood_3.yml", "prood_3.pt", {})
 
 
@@ -260,6 +267,7 @@ l_setting = [
     cifar_ood_prood,
 ]
 l_setting = [cifar100_ood_vit]
+l_setting = [cifar_ood_vit]
 
 
 @pytest.mark.parametrize("model_setting", l_setting)
