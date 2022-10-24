@@ -34,12 +34,14 @@ def get_sampler(**sampler_cfg):
     return sampler
 
 
-def get_detector(device="cpu", normalize=False, **cfg_detector):
+def get_detector(device="cpu", normalize=False, root="./", **cfg_detector):
     d_detector_aug = cfg_detector.pop("detector_aug", None)
     no_grad = cfg_detector.pop("detector_no_grad", True)
     indist_dataset = cfg_detector.pop("indist_dataset", "CIFAR10")
     alias = cfg_detector.pop("alias", None)
-    detector, _ = load_pretrained(**cfg_detector["detector"], device=device)
+    detector, _ = load_pretrained(
+        **cfg_detector["detector"], device=device, root=os.path.join(root, "pretrained")
+    )
 
     aug = get_composed_augmentations(d_detector_aug)
     detector = Detector(
@@ -50,7 +52,7 @@ def get_detector(device="cpu", normalize=False, **cfg_detector):
     if normalize:
         print("Normalizing detector score...")
         normalization_path = os.path.join(
-            "results", indist_dataset, alias, f"IN_score.pkl"
+            root, "results", indist_dataset, alias, f"IN_score.pkl"
         )
         detector.load_normalization(normalization_path, device=device)
     return detector

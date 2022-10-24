@@ -6,5 +6,5 @@ detector_aug:
   vit_eval: 
     size: 224
 detector_no_grad: True
-alias: vit
+alias: vit_hf_md
 indist_dataset: CIFAR10

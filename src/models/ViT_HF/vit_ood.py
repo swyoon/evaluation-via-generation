@@ -17,11 +17,12 @@ class ViT_HF_MD(nn.Module):
             maha_statistic = torch.load(maha_statistic)
             # self.all_means = maha_statistic['all_means']
             # self.invcov = maha_statistic['invcov']
-            self.register_buffer("all_means", maha_statistic["all_means"])
-            self.register_buffer("invcov", maha_statistic["invcov"])
+            self.register_buffer("all_means", maha_statistic["all_means"].double())
+            self.register_buffer("invcov", maha_statistic["invcov"].double())
         else:
-            self.all_means = torch.zeros(1, 768, 10)
-            self.invcov = torch.randn(768, 768)
+            print("mahalanobis statistic is not provided, using random initialization")
+            self.all_means = torch.zeros(1, 768, 10).double()
+            self.invcov = torch.randn(768, 768).double()
 
     def predict(self, x):
         assert isinstance(x, torch.Tensor)
@@ -35,11 +36,15 @@ class ViT_HF_MD(nn.Module):
         out = self.net.vit.layernorm(out)
         return out
 
-    def forward_maha(self, z):
+    def forward_maha(self, z, debug=False):
         """mahalanobis distance"""
-        z = z.unsqueeze(-1)
+        z = z.unsqueeze(-1).double()
         z = z - self.all_means
+        z = z
         op1 = torch.einsum("ijk,jl->ilk", z, self.invcov)
         op2 = torch.einsum("ijk,ijk->ik", op1, z)
 
-        return torch.min(op2, dim=1).values
+        if debug:
+            return op2, op1, z
+        else:
+            return torch.min(op2, dim=1).values.float()

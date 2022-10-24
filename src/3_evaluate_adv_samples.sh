@@ -3,13 +3,13 @@
 # evaluation of adversarial samples
 # pairwise
 device=0
-dataset=svhn
-# dataset=celeba
+# dataset=svhn
+dataset=celeba
 # variation=coord
 # variation=affine
 # variation=colorV1
 variation=stylegan2ada_mh
-variation=stylegan2ada_z32_mh
+variation=stylegan2ada_z16_mh
 mode=pairwise
 # mode=pairwise
 # postfix=v0115
@@ -36,12 +36,12 @@ done
 
 else
 
-for model in prood 
+for model in vit_hf_md 
 # for model in ae pixelcnn glow nae good acet ceda ssd md oe csi 
 # for model in nae good acet ceda ssd md oe csi 
 do
     # for target in nae good acet ceda ssd md atom oe rowl csi 
-    for target in prood
+    for target in vit_hf_md
     do
     # target=${model}
 
