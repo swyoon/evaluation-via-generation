@@ -9,4 +9,5 @@ detector_aug:
     mean: [0.4914, 0.4822, 0.4465]
     std: [0.2471, 0.2435, 0.2615]
 detector_no_grad: True 
+whitebox: True
 alias: oe

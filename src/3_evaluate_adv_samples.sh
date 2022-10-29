@@ -3,8 +3,8 @@
 # evaluation of adversarial samples
 # pairwise
 device=0
-# dataset=svhn
-dataset=celeba
+dataset=svhn
+# dataset=celeba
 # variation=coord
 # variation=affine
 # variation=colorV1

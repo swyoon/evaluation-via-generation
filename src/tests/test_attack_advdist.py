@@ -270,3 +270,33 @@ def test_ad_stylegan2_cfg():
     d_sample = advdist.sample(n_sample=2, device="cpu")
     assert "min_x" in d_sample
     assert "min_E" in d_sample
+
+
+def test_advdist_stylegan2_lgv_cfg():
+    detector = Detector(DummyDetector())
+    s_cfg = """
+        advdist:
+          name: adstylegan2
+          no_grad: false
+          stylegan2_g:
+            arch: stylegan2_g
+            identifier: svhn_stylegan2/z64
+            config_file: generator.yml
+            ckpt_file: model=G_ema-best-weights-step=188000.pth
+          sampler:
+            name: langevin
+            n_step: 3
+            stepsize: 0.1
+            bound: spherical
+            T: 0.1
+            sample_shape: [64]
+            initial_dist: uniform_sphere
+        device: cpu
+        """
+    cfg = OmegaConf.create(s_cfg)
+    advdist = get_advdist(cfg)
+    advdist.detector = detector
+
+    d_sample = advdist.sample(n_sample=2, device="cpu")
+    assert "min_x" in d_sample
+    assert "min_E" in d_sample

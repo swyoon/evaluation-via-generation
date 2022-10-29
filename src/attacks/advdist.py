@@ -372,7 +372,6 @@ class AdversarialDistributionAE(nn.Module):
         assert (z0 is None) != (n_sample is None and device is None)
         if z0 is None:
             z0 = self._initial_sample(n_sample, device)
-        print(self.block)
         return sample_mh(
             z0,
             self._energy_z,
@@ -599,6 +598,7 @@ class AdversarialDistributionStyleGAN2:
         sampler=None,
         truncation_psi=1.0,
         truncation_cutoff=None,
+        no_grad=True,
     ):
         """StyleGAN2 generator"""
         self.detector = detector
@@ -606,9 +606,24 @@ class AdversarialDistributionStyleGAN2:
         self.generator = generator
         self.truncation_psi = truncation_psi
         self.truncation_cutoff = truncation_cutoff
+        self.no_grad = no_grad
 
-    def generate(self, z, truncation_psi=None, truncation_cutoff=None):
-        with torch.no_grad():
+    def generate(self, z, truncation_psi=None, truncation_cutoff=None, no_grad=None):
+        no_grad = self.no_grad if no_grad is None else no_grad
+        if no_grad:
+            with torch.no_grad():
+                i = self.generator(
+                    z,
+                    None,
+                    truncation_psi=self.truncation_psi
+                    if truncation_psi is None
+                    else truncation_psi,
+                    truncation_cutoff=self.truncation_cutoff
+                    if truncation_cutoff is None
+                    else truncation_cutoff,
+                )
+                return ((i.detach() + 1) / 2).clamp(0, 1)
+        else:
             i = self.generator(
                 z,
                 None,
@@ -619,7 +634,8 @@ class AdversarialDistributionStyleGAN2:
                 if truncation_cutoff is None
                 else truncation_cutoff,
             )
-        return ((i.detach() + 1) / 2).clamp(0, 1)
+
+            return ((i + 1) / 2).clamp(0, 1)
 
     def energy(self, z):
         return self.detector.predict(self.generate(z))

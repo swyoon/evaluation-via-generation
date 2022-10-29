@@ -14,7 +14,12 @@ from attacks.advdist import (
     AdversarialDistributionTransform,
     AdversarialDistributionVQVAE,
 )
-from attacks.mcmc import CoordinateDescentSampler, MHSampler, RandomSampler
+from attacks.mcmc import (
+    CoordinateDescentSampler,
+    LangevinSampler,
+    MHSampler,
+    RandomSampler,
+)
 from augmentations import get_composed_augmentations
 from models import get_model, load_pretrained
 
@@ -29,6 +34,8 @@ def get_sampler(**sampler_cfg):
         sampler = RandomSampler(**sampler_cfg)
     elif sampler_type == "coord":
         sampler = CoordinateDescentSampler(**sampler_cfg)
+    elif sampler_type == "langevin":
+        sampler = LangevinSampler(**sampler_cfg)
     else:
         raise ValueError(f"Invalid sampler type: {sampler_type}")
     return sampler
@@ -37,6 +44,7 @@ def get_sampler(**sampler_cfg):
 def get_detector(device="cpu", normalize=False, root="./", **cfg_detector):
     d_detector_aug = cfg_detector.pop("detector_aug", None)
     no_grad = cfg_detector.pop("detector_no_grad", True)
+    whitebox = cfg_detector.pop("whitebox", True)
     indist_dataset = cfg_detector.pop("indist_dataset", "CIFAR10")
     alias = cfg_detector.pop("alias", None)
     detector, _ = load_pretrained(
@@ -45,7 +53,7 @@ def get_detector(device="cpu", normalize=False, root="./", **cfg_detector):
 
     aug = get_composed_augmentations(d_detector_aug)
     detector = Detector(
-        detector, bound=-1, transform=aug, no_grad=no_grad, use_rank=False
+        detector, bound=-1, transform=aug, no_grad=not whitebox, use_rank=False
     )
     detector.to(device)
 

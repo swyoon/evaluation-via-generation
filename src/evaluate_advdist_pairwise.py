@@ -111,7 +111,16 @@ l_sample = []
 for file_path in file_list:
     l_sample.append(torch.load(file_path))
 x_saved_samples = torch.cat(l_sample)
-print("sample shape", x_saved_samples.shape)
+print("x sample shape", x_saved_samples.shape)
+
+"""concat z samples"""
+file_list = sorted(glob.glob(os.path.join(target_dir, "advsample_z_*.pkl")))
+assert len(file_list) > 0, "No advsamples detected"
+l_sample = []
+for file_path in file_list:
+    l_sample.append(torch.load(file_path))
+z_saved_samples = torch.cat(l_sample)
+print("z sample shape", z_saved_samples.shape)
 
 
 """Compute AUC score"""
@@ -140,8 +149,11 @@ with open(auc_save_path, "w") as f:
 out_score_path = os.path.join(result_dir, f"score.pkl")
 torch.save(out_score, out_score_path)
 
-out_x_path = os.path.join(result_dir, f"sample.pkl")
+out_x_path = os.path.join(result_dir, f"sample_x.pkl")
 torch.save(x_saved_samples, out_x_path)
+
+out_z_path = os.path.join(result_dir, f"sample_z.pkl")
+torch.save(z_saved_samples, out_z_path)
 
 sorted_in_score = np.sort(in_test_score)
 out_rank = np.searchsorted(sorted_in_score, out_score)

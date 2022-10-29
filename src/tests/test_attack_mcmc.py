@@ -2,6 +2,8 @@ import torch
 
 from attacks.mcmc import (
     CoordinateDescentSampler,
+    LangevinSampler,
+    MHSampler,
     RandomSampler,
     sample_discrete_gibbs,
     sample_mh,
@@ -60,6 +62,36 @@ def test_random_sampler():
     energy_fn = lambda x: 0.5 * (x**2).flatten(1).sum(axis=1)
     sampler = RandomSampler(
         sample_shape=(3, 32, 32), n_step=10, bound=(0, 1), initial_dist="uniform"
+    )
+    d_sample = sampler.sample(energy_fn, n_sample=10, device="cpu")
+    assert "x" in d_sample
+    assert "l_x" in d_sample
+    assert "l_E" in d_sample
+
+
+def test_mh_sampler():
+    energy_fn = lambda x: 0.5 * (x**2).flatten(1).sum(axis=1)
+    sampler = MHSampler(
+        sample_shape=(3, 32, 32),
+        stepsize=0.1,
+        n_step=10,
+        bound=(0, 1),
+        initial_dist="uniform",
+    )
+    d_sample = sampler.sample(energy_fn, n_sample=10, device="cpu")
+    assert "x" in d_sample
+    assert "l_x" in d_sample
+    assert "l_E" in d_sample
+
+
+def test_langevin_sampler():
+    energy_fn = lambda x: 0.5 * (x**2).flatten(1).sum(axis=1)
+    sampler = LangevinSampler(
+        sample_shape=(3, 32, 32),
+        stepsize=0.1,
+        n_step=10,
+        bound=(0, 1),
+        initial_dist="uniform",
     )
     d_sample = sampler.sample(energy_fn, n_sample=10, device="cpu")
     assert "x" in d_sample
