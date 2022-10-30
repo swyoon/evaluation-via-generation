@@ -65,7 +65,8 @@ from models.OE.allconv import AllConvNet
 from models.OE.outlier_exposure import OutlierExposure
 from models.OE.wrn import WideResNet
 from models.pixelcnn import PixelCNN_OC
-from models.ViT import load_pretrained_vit_tf
+
+# from models.ViT import load_pretrained_vit_tf
 from models.ViT_HF import load_pretrained_vit_hf
 
 

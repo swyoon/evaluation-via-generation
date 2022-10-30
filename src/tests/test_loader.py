@@ -43,3 +43,64 @@ def test_concat_dataset():
         "batch_size": 1,
     }
     get_dataset(data_cfg)
+
+
+def test_rimgnet_dataset():
+    cfg = {
+        "dataset": "RImgNet",
+        "path": "datasets",
+        "shuffle": False,
+        "n_workers": 0,
+        "batch_size": 1,
+        "split": "evaluation",
+    }
+    dl = get_dataloader(cfg)
+    xx, yy = next(iter(dl))
+    assert xx.shape == (1, 3, 224, 224)
+    assert yy.shape == (1,)
+    print(len(dl.dataset))
+
+
+def test_flowers_dataset():
+    cfg = {
+        "dataset": "Flowers",
+        "path": "datasets",
+        "shuffle": False,
+        "n_workers": 0,
+        "batch_size": 1,
+        "split": "evaluation",
+    }
+    dl = get_dataloader(cfg)
+    xx, yy = next(iter(dl))
+    assert xx.shape == (1, 3, 224, 224)
+    assert yy.shape == (1,)
+
+
+def test_cars_dataset():
+    cfg = {
+        "dataset": "Cars",
+        "path": "datasets",
+        "shuffle": False,
+        "n_workers": 0,
+        "batch_size": 1,
+        "split": "evaluation",
+    }
+    dl = get_dataloader(cfg)
+    xx, yy = next(iter(dl))
+    assert xx.shape == (1, 3, 224, 224)
+    assert yy.shape == (1,)
+
+
+def test_fgvc_dataset():
+    cfg = {
+        "dataset": "FGVC",
+        "path": "datasets",
+        "shuffle": False,
+        "n_workers": 0,
+        "batch_size": 1,
+        "split": "evaluation",
+    }
+    dl = get_dataloader(cfg)
+    xx, yy = next(iter(dl))
+    assert xx.shape == (1, 3, 224, 224)
+    assert yy.shape == (1,)

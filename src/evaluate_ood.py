@@ -39,6 +39,7 @@ parser.add_argument(
         "MNIST_OOD",
         "CIFAR10_OOD",
         "CIFAR100_OOD",
+        "RImgNet",
     ],
     help="inlier dataset dataset",
 )

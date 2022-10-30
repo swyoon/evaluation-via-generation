@@ -22,6 +22,7 @@ configs=(# cifar_ae.yml
          cifar_prood.yml
      )
 configs=(cifar_vit_hf_md.yml)
+configs=()
 
 for config in "${configs[@]}"; do
    echo ${config}
@@ -32,3 +33,16 @@ for config in "${configs[@]}"; do
     #     --config configs/cifar_detectors/${config} --device auto --in_split training_full 
     # sleep 0.1s
 done
+
+
+
+
+ood=Cars,Flowers,FGVC
+configs=(rimgnet_prood.yml)
+for config in "${configs[@]}"; do
+   echo ${config}
+    python evaluate_ood.py --dataset RImgNet --ood ${ood} \
+        --config configs/rimgnet_detectors/${config} --device ${device} --in_split evaluation 
+done
+
+

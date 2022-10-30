@@ -1,0 +1,7 @@
+detector:
+  identifier: rimgnet_ood_prood/prood_4
+  config_file: prood_4.yml
+  ckpt_file: prood_4.pt
+detector_aug: null
+detector_no_grad: True 
+alias: prood 

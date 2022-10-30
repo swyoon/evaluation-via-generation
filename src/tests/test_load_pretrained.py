@@ -157,6 +157,7 @@ cifar_ood_vit = (
 )
 
 cifar_ood_prood = ("cifar_ood_prood/prood_3", "prood_3.yml", "prood_3.pt", {})
+rimgnet_ood_prood = ("rimgnet_ood_prood/prood_4", "prood_4.yml", "prood_4.pt", {})
 
 
 ####   StyleGANs
@@ -268,6 +269,7 @@ l_setting = [
 ]
 l_setting = [cifar100_ood_vit]
 l_setting = [cifar_ood_vit]
+l_setting = [rimgnet_ood_prood]
 
 
 @pytest.mark.parametrize("model_setting", l_setting)
