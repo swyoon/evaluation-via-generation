@@ -559,7 +559,8 @@ class AdversarialDistributionTransform:
         img: a batch of images [N, 3, H, W]
         z: a batch of transform parameters [N, D]
         """
-        return self.detector.predict(self.transform(img, z))
+        with torch.no_grad():  # TODO: temporary measure
+            return self.detector.predict(self.transform(img, z))
 
     def sample(self, img, z0=None, writer=None):
         energy = functools.partial(self.energy, img=img)
