@@ -3,13 +3,13 @@
 # evaluation of adversarial samples
 # pairwise
 device=0
-dataset=svhn
-# dataset=celeba
+# dataset=svhn
+dataset=celeba
 # variation=coord
 # variation=affine
 # variation=colorV1
-variation=stylegan2ada_mh
-variation=stylegan2ada_z16_mh
+# variation=stylegan2ada_mh
+variation=stylegan2ada_z512_mh
 mode=pairwise
 # mode=pairwise
 # postfix=v0115

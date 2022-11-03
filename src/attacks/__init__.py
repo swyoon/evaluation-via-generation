@@ -44,7 +44,7 @@ def get_sampler(**sampler_cfg):
 def get_detector(device="cpu", normalize=False, root="./", **cfg_detector):
     d_detector_aug = cfg_detector.pop("detector_aug", None)
     no_grad = cfg_detector.pop("detector_no_grad", True)
-    whitebox = cfg_detector.pop("whitebox", True)
+    whitebox = cfg_detector.pop("whitebox", False)
     indist_dataset = cfg_detector.pop("indist_dataset", "CIFAR10")
     alias = cfg_detector.pop("alias", None)
     detector, _ = load_pretrained(

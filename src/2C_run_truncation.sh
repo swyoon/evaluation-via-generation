@@ -18,6 +18,8 @@ do
 
     # for model in acet ae ceda csi glow good md nae oe pixelcnn ssd;
     # for model in oe;
+    for psi in 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8;
+    do
     for model in vit_hf_md ;
     do
         for ((idx=0;idx<split;idx++)); do
@@ -26,15 +28,16 @@ do
         tsp python attack.py --attack ${CFG_ATT}/${DATASET}_${THREAT}.yml \
             --detector ${CFG_DET}/cifar_${model}.yml \
             --logdir results/ \
-            --run run \
-            --n_sample 250 --split ${split} --idx ${idx} \
+            --run psi_${psi} \
+            --n_sample 50 --split ${split} --idx ${idx} \
             --device auto  \
             --data.out_eval.batch_size 250 \
-            --advdist.trurncation_psi 0.1
+            --advdist.truncation_psi ${psi}
             # --device $((idx))  \
 
         sleep 0.1s
         done
+    done
     done
 done
 done

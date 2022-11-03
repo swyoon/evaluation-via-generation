@@ -152,6 +152,9 @@ torch.save(out_score, out_score_path)
 out_x_path = os.path.join(result_dir, f"sample_x.pkl")
 torch.save(x_saved_samples, out_x_path)
 
+out_x_path = os.path.join(result_dir, f"sample.pkl")
+torch.save(x_saved_samples, out_x_path)
+
 out_z_path = os.path.join(result_dir, f"sample_z.pkl")
 torch.save(z_saved_samples, out_z_path)
 
