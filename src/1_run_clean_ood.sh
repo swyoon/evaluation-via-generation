@@ -38,7 +38,8 @@ done
 
 
 ood=Cars,Flowers,FGVC
-configs=(rimgnet_prood.yml)
+# configs=(rimgnet_prood.yml)
+configs=(rimgnet_vit_hf_md.yml)
 for config in "${configs[@]}"; do
    echo ${config}
     python evaluate_ood.py --dataset RImgNet --ood ${ood} \

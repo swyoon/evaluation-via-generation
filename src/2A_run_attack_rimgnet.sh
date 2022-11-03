@@ -10,14 +10,14 @@ CFG_DET=configs/rimgnet_detectors
 for DATASET in flowers cars fgvc;
 do
 # for threat in stylegan2ada_z16_lgv stylegan2ada_z32_mh stylegan2ada_z64_mh stylegan2ada_z512_mh;
-for threat in affine;
+for threat in affine colorV1;
 do
     THREAT=${threat}
     split=4
 
     # for model in acet ae ceda csi glow good md nae oe pixelcnn ssd;
-    for model in prood;
-    # for model in vit_hf_md ;
+    # for model in prood;
+    for model in vit_hf_md ;
     do
         for ((idx=0;idx<split;idx++)); do
         echo $model

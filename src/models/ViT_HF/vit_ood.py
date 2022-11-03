@@ -7,10 +7,10 @@ class ViT_HF_MD(nn.Module):
     """Wrapper of HuggingFace Vision Transformer for
     out-of-distribution detection with mahalanobis distance"""
 
-    def __init__(self, maha_statistic=None):
+    def __init__(self, maha_statistic=None, num_labels=10):
         super().__init__()
         self.net = ViTForImageClassification.from_pretrained(
-            "google/vit-base-patch16-224-in21k", num_labels=10
+            "google/vit-base-patch16-224-in21k", num_labels=num_labels
         )
 
         if maha_statistic is not None:
@@ -21,7 +21,7 @@ class ViT_HF_MD(nn.Module):
             self.register_buffer("invcov", maha_statistic["invcov"].double())
         else:
             print("mahalanobis statistic is not provided, using random initialization")
-            self.all_means = torch.zeros(1, 768, 10).double()
+            self.all_means = torch.zeros(1, 768, num_labels).double()
             self.invcov = torch.randn(768, 768).double()
 
     def predict(self, x):
