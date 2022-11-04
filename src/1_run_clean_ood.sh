@@ -22,7 +22,7 @@ configs=(# cifar_ae.yml
          cifar_prood.yml
      )
 configs=(cifar_vit_hf_md.yml)
-configs=()
+configs=(cifar_prood.yml)
 
 for config in "${configs[@]}"; do
    echo ${config}
@@ -39,7 +39,8 @@ done
 
 ood=Cars,Flowers,FGVC
 # configs=(rimgnet_prood.yml)
-configs=(rimgnet_vit_hf_md.yml)
+# configs=(rimgnet_vit_hf_md.yml)
+configs=()
 for config in "${configs[@]}"; do
    echo ${config}
     python evaluate_ood.py --dataset RImgNet --ood ${ood} \

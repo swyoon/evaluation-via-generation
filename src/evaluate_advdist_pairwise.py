@@ -40,6 +40,9 @@ parser.add_argument(
                                                 log dir. results/... or pretrained/...",
 )
 parser.add_argument("--device", default=0, type=str, help="device")
+parser.add_argument(
+    "--in-dataset", default="CIFAR10", type=str, help="in-distribution dataset"
+)
 
 args, unknown = parser.parse_known_args()
 d_cmd_cfg = parse_unknown_args(unknown)
@@ -91,7 +94,7 @@ no_grad = cfg_detector.get("detector_no_grad", False)
 #             'split': 'evaluation'}
 #
 # test_dl = get_dataloader(data_cfg)
-print("In-distribution: ", "CIFAR10_OOD")
+print("In-distribution: ", args.in_dataset)
 
 # sample_model_name_list = ['ae', 'csi', 'glow', 'md', 'nae', 'oe', 'pixelcnn']
 # sample_ae_cfg_list = ['z32', 'z64']
@@ -126,7 +129,7 @@ print("z sample shape", z_saved_samples.shape)
 """Compute AUC score"""
 sample_batch_size = 128
 in_test_score = torch.load(
-    os.path.join("results", "CIFAR10", cfg_detector["alias"], "IN_score.pkl")
+    os.path.join("results", args.in_dataset, cfg_detector["alias"], "IN_score.pkl")
 )
 # in_test_score = batch_run(detector, test_dl, device=device, no_grad=no_grad, normalize=False)
 out_dl = DataLoader(TensorDataset(x_saved_samples), batch_size=sample_batch_size)
