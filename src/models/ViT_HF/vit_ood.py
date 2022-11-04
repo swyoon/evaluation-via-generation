@@ -38,7 +38,7 @@ class ViT_HF_MD(nn.Module):
 
     def forward_maha(self, z, debug=False):
         """mahalanobis distance"""
-        z = z.unsqueeze(-1).double()
+        z = z.unsqueeze(-1)  # .double()
         z = z - self.all_means
         z = z
         op1 = torch.einsum("ijk,jl->ilk", z, self.invcov)
