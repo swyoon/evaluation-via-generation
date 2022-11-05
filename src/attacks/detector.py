@@ -17,12 +17,14 @@ class Detector(nn.Module):
         mean=0,
         std=1,
         bound=-1,
-        no_grad=False,
+        no_grad_predict=True,
+        blackbox_only=False,
         up_bound=-1,
         use_rank=False,
     ):
         """
-        no_grad: `torch.no_grad()` when predict
+        no_grad_predict: `torch.no_grad()` when predict
+        blackbox_only: only support `requires_grad=False`
         """
         super().__init__()
         self.model = model
@@ -30,16 +32,25 @@ class Detector(nn.Module):
         self.register_buffer("mean", torch.tensor(mean))
         self.register_buffer("std", torch.tensor(std))
         self.register_buffer("bound", torch.tensor(bound))
-        self.no_grad = no_grad
+        self.no_grad_predict = no_grad_predict
         self.up_bound = up_bound
         self.use_rank = use_rank
+        self.blackbox_only = blackbox_only
 
-    def predict(self, x, normalize=True, binary_reward=None):
-        if self.no_grad:
-            f = torch.no_grad()(self._predict)
+    def predict(self, x, normalize=True, binary_reward=None, requires_grad=False):
+        if requires_grad and self.blackbox_only:
+            raise ValueError("Blackbox detector does not support requires_grad=True")
+
+        if requires_grad:
+            return self._predict(x, normalize=normalize, binary_reward=binary_reward)
+
+        if self.no_grad_predict:
+            with torch.no_grad():
+                return self._predict(
+                    x, normalize=normalize, binary_reward=binary_reward
+                )
         else:
-            f = self._predict
-        return f(x, normalize=normalize, binary_reward=binary_reward)
+            return self._predict(x, normalize=normalize, binary_reward=binary_reward)
 
     def _predict(self, x, normalize=True, binary_reward=None):
         if self.transform is not None:

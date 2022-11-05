@@ -3,5 +3,7 @@ detector:
   config_file: good.yml
   ckpt_file: GOODQ80.pt
 detector_aug: null
-detector_no_grad: True 
 alias: good
+blackbox_only: false
+no_grad_predict: true 
+indist_dataset: CIFAR10

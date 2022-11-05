@@ -43,8 +43,8 @@ def get_sampler(**sampler_cfg):
 
 def get_detector(device="cpu", normalize=False, root="./", **cfg_detector):
     d_detector_aug = cfg_detector.pop("detector_aug", None)
-    no_grad = cfg_detector.pop("detector_no_grad", True)
-    whitebox = cfg_detector.pop("whitebox", False)
+    no_grad_predict = cfg_detector.pop("no_grad_predict", True)
+    blackbox_only = cfg_detector.pop("blackbox_only", False)
     indist_dataset = cfg_detector.pop("indist_dataset", "CIFAR10")
     alias = cfg_detector.pop("alias", None)
     detector, _ = load_pretrained(
@@ -53,7 +53,12 @@ def get_detector(device="cpu", normalize=False, root="./", **cfg_detector):
 
     aug = get_composed_augmentations(d_detector_aug)
     detector = Detector(
-        detector, bound=-1, transform=aug, no_grad=not whitebox, use_rank=False
+        detector,
+        bound=-1,
+        transform=aug,
+        no_grad_predict=no_grad_predict,
+        blackbox_only=blackbox_only,
+        use_rank=False,
     )
     detector.to(device)
 

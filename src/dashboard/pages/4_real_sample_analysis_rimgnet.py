@@ -12,7 +12,15 @@ from loader import get_dataloader
 st.title("Real sample visualization")
 
 # load image data
-dataset = st.selectbox("Select dataset", ["Cars", "FGVC", "Flowers"])
+dataset = st.selectbox(
+    "Select dataset",
+    [
+        "RImgNet",
+        "Cars",
+        "FGVC",
+        "Flowers",
+    ],
+)
 split = st.selectbox("Select split", ["evaluation"])
 
 
@@ -51,7 +59,10 @@ st.subheader("Worst Inlier Visualization")
 for detector in l_selected_detector:
     # load inlier score
     inlier_dir = os.path.join("../results/RImgNet/", detector)
-    score = torch.load(os.path.join(inlier_dir, f"OOD_rank_{dataset}.pkl"))
+    if dataset == "RImgNet":
+        score = torch.load(os.path.join(inlier_dir, "IN_score.pkl"))
+    else:
+        score = torch.load(os.path.join(inlier_dir, f"OOD_rank_{dataset}.pkl"))
     in_sorted_score, in_sorted_idx = torch.sort(torch.tensor(score), descending=True)
 
     st.text(detector)

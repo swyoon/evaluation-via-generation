@@ -3,5 +3,7 @@ detector:
   config_file: ghosh_z128.yml
   ckpt_file: model_best.pkl
 detector_aug: null
-detector_no_grad: True 
 alias: ae
+blackbox_only: false
+no_grad_predict: true 
+indist_dataset: CIFAR10

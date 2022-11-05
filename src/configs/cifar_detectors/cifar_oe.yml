@@ -8,6 +8,7 @@ detector_aug:
   normalize:
     mean: [0.4914, 0.4822, 0.4465]
     std: [0.2471, 0.2435, 0.2615]
-detector_no_grad: True 
-whitebox: True
 alias: oe
+blackbox_only: false
+no_grad_predict: true 
+indist_dataset: CIFAR10
