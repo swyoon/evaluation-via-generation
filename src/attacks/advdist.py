@@ -3,6 +3,7 @@ import functools
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torchvision.transforms.functional import normalize
 from torchvision.utils import make_grid
 
@@ -600,6 +601,7 @@ class AdversarialDistributionStyleGAN2:
         truncation_psi=1.0,
         truncation_cutoff=None,
         no_grad=True,
+        resize=None,
     ):
         """StyleGAN2 generator"""
         self.detector = detector
@@ -608,6 +610,7 @@ class AdversarialDistributionStyleGAN2:
         self.truncation_psi = truncation_psi
         self.truncation_cutoff = truncation_cutoff
         self.no_grad = no_grad
+        self.resize = resize
 
     def generate(self, z, truncation_psi=None, truncation_cutoff=None, no_grad=None):
         no_grad = self.no_grad if no_grad is None else no_grad
@@ -639,7 +642,10 @@ class AdversarialDistributionStyleGAN2:
             return ((i + 1) / 2).clamp(0, 1)
 
     def energy(self, z):
-        return self.detector.predict(self.generate(z))
+        x = self.generate(z)
+        if self.resize:
+            x = F.interpolate(x, size=self.resize, mode="bilinear")
+        return self.detector.predict(x)
 
     def sample(self, z0=None, n_sample=None, device=None, img=None):
         if img is not None:

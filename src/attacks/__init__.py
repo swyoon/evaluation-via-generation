@@ -127,6 +127,7 @@ def get_advdist(cfg):
         cfg_stylegan2_gen = cfg_advdist.pop("stylegan2_g")
         g, _ = load_pretrained(**cfg_stylegan2_gen)
         g.to(cfg["device"])
+        g.eval()
         advdist = AdversarialDistributionStyleGAN2(
             generator=g, sampler=sampler, **cfg_advdist
         )

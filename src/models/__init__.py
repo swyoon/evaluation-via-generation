@@ -689,6 +689,26 @@ def get_stylegan2_g(**model_cfg):
     return generator
 
 
+def get_projgan_g(**model_cfg):
+    model_cfg.pop("arch")
+    net_type = model_cfg.pop("net")
+    cfg = model_cfg
+
+    if net_type == "fastgan":
+        from models.PG.pg_modules.networks_fastgan import Generator
+
+        net = Generator(**cfg)
+        return net
+
+    elif net_type == "stylegan2":
+        from models.PG.pg_modules.networks_stylegan2 import Generator
+
+        net = Generator(**cfg)
+        return net
+    else:
+        raise NotImplementedError
+
+
 def get_model(cfg, *args, version=None, **kwargs):
     # cfg can be a whole config dictionary or a value of a key 'model' in the config dictionary (cfg['model']).
     if "model" in cfg:
@@ -726,6 +746,7 @@ def _get_model_instance(name):
             "glow_y0ast": get_glow_y0ast,
             "resnetcls": ResNetClassifier,
             "stylegan2_g": get_stylegan2_g,
+            "projgan_g": get_projgan_g,
         }[name]
     except:
         raise ValueError("Model {} not available".format(name))
@@ -1055,16 +1076,16 @@ def load_pretrained_ensemble(cfg, device):
     return detector, cfg
 
 
-def load_stylegan2_generator(cfg, root, identifier, ckpt_file, **kwargs):
-    from models.StyleGAN2.stylegan2 import Generator
-
-    ckpt = torch.load(os.path.join(root, identifier, ckpt_file))["state_dict"]
-    cfg = cfg["model"]
-    cfg.pop("arch")
-    generator = Generator(**cfg)
-    generator.load_state_dict(ckpt)
-    generator.eval()
-    return generator, cfg
+# def load_stylegan2_generator(cfg, root, identifier, ckpt_file, **kwargs):
+#     from models.StyleGAN2.stylegan2 import Generator
+#
+#     ckpt = torch.load(os.path.join(root, identifier, ckpt_file))["state_dict"]
+#     cfg = cfg["model"]
+#     cfg.pop("arch")
+#     generator = Generator(**cfg)
+#     generator.load_state_dict(ckpt)
+#     generator.eval()
+#     return generator, cfg
 
 
 def load_pretrained_atom(cfg, root, identifier, ckpt_file, **kwargs):
