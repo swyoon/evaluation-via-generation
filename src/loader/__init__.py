@@ -339,7 +339,8 @@ def get_dataset(data_dict, split_type=None, data_aug=None, dequant=None):
         elif split_type == "validation":
             split = "val"
         elif split_type == "evaluation":
-            split = "test"
+            # split = "test"
+            split = "test_wo_insect"
         transform = get_imageNet_augmentation(
             type=augm_type, out_size=size, config_dict=None
         )

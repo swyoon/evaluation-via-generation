@@ -173,6 +173,8 @@ class Flowers(Dataset):
             self.indices = np.concatenate([trn_idcs, val_idcs])
         elif split == "test":
             self.indices = setids["tstid"][0]
+        elif split == "test_wo_insect":
+            self.indices = np.load("test_wo_insect.npy")
         else:
             raise ValueError()
 

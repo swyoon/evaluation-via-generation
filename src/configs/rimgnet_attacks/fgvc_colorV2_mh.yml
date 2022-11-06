@@ -1,15 +1,16 @@
 advdist:
   name: adtr
-  transform: colorV1 
+  transform: colorV2
   z_bound: [0, 1]
   sampler:
-    name: mh
+    name: mh 
     T: 1
     stepsize: 0.1
     n_step: 2000
     bound: [0, 1] 
     initial_dist: uniform
     sample_shape: [4]
+  blackbox: True 
 data:
   indist_val:
     dataset: RImgNet 

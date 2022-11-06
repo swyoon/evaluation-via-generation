@@ -553,7 +553,18 @@ class AdversarialDistributionTransform:
                 scale_bound=(0.9, 1.5),
                 shear_bound=(-1 / np.sqrt(3), 1 / np.sqrt(3)),
             )
-
+        elif transform == "affineV2":
+            # kornia-based implementation
+            # adjusted for RImgNet
+            self.D = 5
+            self.transform = functools.partial(
+                apply_affine_kornia,
+                a_bound=(-45, 45),
+                tx_bound=(-45, 45),  # approx 20%
+                ty_bound=(-45, 45),
+                scale_bound=(0.9, 1.5),
+                shear_bound=(-1 / np.sqrt(3), 1 / np.sqrt(3)),
+            )
         elif transform == "colorV0":
             self.D = 4
             self.transform = functools.partial(
@@ -577,10 +588,10 @@ class AdversarialDistributionTransform:
             """reduce saturation and hue range according to SimClr's ColorJitter setting"""
             self.D = 4
             self.transform = functools.partial(
-                apply_colortransform_batch,
-                b_bound=(0.6, 1.6),
-                c_bound=(0.6, 1.6),
-                s_bound=(0.6, 1.6),
+                apply_colortransform_kornia,
+                b_bound=(0.5, 1.5),
+                c_bound=(0.5, 1.5),
+                s_bound=(0.5, 1.5),
                 h_bound=(-0.2, 0.2),
             )
 

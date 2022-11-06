@@ -3,6 +3,7 @@ detector:
   config_file: prood_4.yml
   ckpt_file: prood_4.pt
 detector_aug: null
-detector_no_grad: True 
 alias: prood 
 indist_dataset: RImgNet
+blackbox_only: false 
+no_grad_predict: true 
