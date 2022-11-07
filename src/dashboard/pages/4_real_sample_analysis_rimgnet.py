@@ -19,6 +19,13 @@ dataset = st.selectbox(
         "Cars",
         "FGVC",
         "Flowers",
+        "SVHN_OOD",
+        "CelebA_OOD",
+        "MNIST_OOD",
+        "FashionMNIST_OOD",
+        "dtd",
+        "OpenImages-O",
+        "EuroSAT",
     ],
 )
 split = st.selectbox("Select split", ["evaluation"])
@@ -27,7 +34,7 @@ split = st.selectbox("Select split", ["evaluation"])
 @st.cache
 def load_data():
     global split
-    size = 32
+    size = 224
     channel = 3
     data_dict = {
         "path": "../datasets",
@@ -75,6 +82,7 @@ for detector in l_selected_detector:
         use_column_width="auto",
         caption=[f"{in_sorted_score[i]}" for i in range(n_image_show)],
     )
+    assert ds[in_sorted_idx[0]][0].shape[1] == 224
 
     st.caption("most inlier-like")
     in_sorted_score, in_sorted_idx = torch.sort(torch.tensor(score), descending=False)

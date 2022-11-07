@@ -104,3 +104,53 @@ def test_fgvc_dataset():
     xx, yy = next(iter(dl))
     assert xx.shape == (1, 3, 224, 224)
     assert yy.shape == (1,)
+
+
+def test_svhn_dataset_resize():
+    cfg = {
+        "dataset": "SVHN_OOD",
+        "path": "datasets",
+        "shuffle": False,
+        "n_workers": 0,
+        "batch_size": 1,
+        "split": "evaluation",
+        "size": 224,
+    }
+    dl = get_dataloader(cfg)
+    xx, yy = next(iter(dl))
+    assert xx.shape == (1, 3, 224, 224)
+    assert yy.shape == (1,)
+
+
+def test_openimages_o_dataset():
+    cfg = {
+        "dataset": "OpenImages-O",
+        "path": "datasets",
+        "shuffle": False,
+        "n_workers": 0,
+        "batch_size": 2,
+        "split": "evaluation",
+    }
+    dl = get_dataloader(cfg)
+    xx, yy = next(iter(dl))
+    assert xx.shape == (2, 3, 224, 224)
+    assert yy.shape == (2,)
+
+    print(len(dl.dataset))
+
+
+def test_eurosat():
+    cfg = {
+        "dataset": "EuroSAT",
+        "path": "datasets",
+        "shuffle": False,
+        "n_workers": 0,
+        "batch_size": 2,
+        "split": "evaluation",
+    }
+    dl = get_dataloader(cfg)
+    xx, yy = next(iter(dl))
+    assert xx.shape == (2, 3, 224, 224)
+    assert yy.shape == (2,)
+
+    print(len(dl.dataset))

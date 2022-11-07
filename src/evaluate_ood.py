@@ -92,9 +92,15 @@ def evaluate(m, in_dl, out_dl, device):
 if args.dataset in {"MNIST_OOD", "FashionMNIST_OOD"}:
     size = 28
     channel = 1
-else:
+elif args.dataset in {"CIFAR10_OOD", "CIFAR100_OOD"}:
     size = 32
     channel = 3
+elif args.dataset in {"RImgNet"}:
+    size = 224
+    channel = 3
+else:
+    raise NotImplementedError
+
 data_dict = {
     "path": "datasets",
     "size": size,

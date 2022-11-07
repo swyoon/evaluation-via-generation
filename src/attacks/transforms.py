@@ -135,3 +135,28 @@ def apply_affine_kornia(
         sy=torch.zeros_like(sh),
     )
     return kornia.geometry.warp_affine(img, matrix[:, :2, :3], dsize=img.shape[2:])
+
+
+def apply_cutout(
+    img, x, cx_bound=(0, 32), cy_bound=(0, 32), w_bound=(1, 32), h_bound=(1, 32)
+):
+    """WIP:
+    apply cutout to image batch
+    img: [N, 3, H, W], torch.Tensor
+    x: [N, 5], bounded to [0, 1]
+    """
+    cx = x[:, 0] * (cx_bound[1] - cx_bound[0]) + cx_bound[0]
+    cy = x[:, 1] * (cy_bound[1] - cy_bound[0]) + cy_bound[0]
+    w = x[:, 2] * (w_bound[1] - w_bound[0]) + w_bound[0]
+    h = x[:, 3] * (h_bound[1] - h_bound[0]) + h_bound[0]
+    l_batch = []
+    for img_, cx_, cy_, w_, h_ in zip(img, cx, cy, w, h):
+        img_ = TF.erase(
+            img_,
+            i=int(cx_.item()),
+            j=int(cy_.item()),
+            h=int(h_.item()),
+            w=int(w_.item()),
+        )
+        l_batch.append(img_)
+    return torch.stack(l_batch)

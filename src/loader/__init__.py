@@ -5,7 +5,7 @@ import os
 import numpy as np
 import torch
 from torch.utils import data
-from torchvision.datasets import FashionMNIST, Omniglot
+from torchvision.datasets import FashionMNIST, ImageFolder, Omniglot
 from torchvision.transforms import CenterCrop, Compose, Normalize, Pad, Resize, ToTensor
 
 from augmentations import get_composed_augmentations
@@ -140,7 +140,7 @@ def get_dataset(data_dict, split_type=None, data_aug=None, dequant=None):
         if size == 28:
             l_transform = [ToTensor()]
         else:
-            l_transform = [Gray2RGB(), Resize(OOD_SIZE), ToTensor()]
+            l_transform = [Gray2RGB(), Resize(size), ToTensor()]
         dataset = MNIST_OOD(
             data_path, split=split_type, download=True, transform=Compose(l_transform)
         )
@@ -160,7 +160,7 @@ def get_dataset(data_dict, split_type=None, data_aug=None, dequant=None):
         if size == 28:
             l_transform = [ToTensor()]
         else:
-            l_transform = [Gray2RGB(), Resize(OOD_SIZE), ToTensor()]
+            l_transform = [Gray2RGB(), Resize(size), ToTensor()]
 
         dataset = FashionMNIST_OOD(
             data_path, split=split_type, download=True, transform=Compose(l_transform)
@@ -220,6 +220,10 @@ def get_dataset(data_dict, split_type=None, data_aug=None, dequant=None):
         dataset.img_size = (OOD_SIZE, OOD_SIZE)
 
     elif name == "SVHN_OOD":
+        size = data_dict.get("size", 32)
+        if size != 32:
+            data_aug = Compose([Resize(size), data_aug])
+
         dataset = SVHN_OOD(
             data_path, split=split_type, download=True, transform=data_aug
         )
@@ -340,7 +344,7 @@ def get_dataset(data_dict, split_type=None, data_aug=None, dequant=None):
             split = "val"
         elif split_type == "evaluation":
             # split = "test"
-            split = "test_wo_insect"
+            split = "test_wo_insects"
         transform = get_imageNet_augmentation(
             type=augm_type, out_size=size, config_dict=None
         )
@@ -376,6 +380,31 @@ def get_dataset(data_dict, split_type=None, data_aug=None, dequant=None):
         dataset = FGVCAircraft(
             path, class_type="variant", split=split, transform=transform
         )
+    elif name == "dtd":
+        size = data_dict.get("size", 224)
+        path = os.path.join(data_dict["path"], "dtd", "dtd", "images")
+        dataset = ImageFolder(
+            path, transform=Compose([Resize(size), CenterCrop(size), ToTensor()])
+        )
+
+    elif name == "OpenImages-O":
+        from loader.openimages import OpenImages_O
+
+        size = data_dict.get("size", 224)
+        path = os.path.join(data_dict["path"], "openimagev3")
+        transform = Compose([Resize(size), CenterCrop(size), ToTensor()])
+        dataset = OpenImages_O(
+            root=path,
+            image_list_file="openimage_o.txt",
+            transform=transform,
+            split="evaluation",
+        )
+
+    elif name == "EuroSAT":
+        size = data_dict.get("size", 224)
+        path = os.path.join(data_dict["path"], "EuroSAT", "2750")
+        transform = Compose([Resize(size), CenterCrop(size), ToTensor()])
+        dataset = ImageFolder(path, transform=transform)
     else:
         n_classes = data_dict["n_classes"]
         split = data_dict["split"][split_type]

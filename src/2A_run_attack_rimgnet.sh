@@ -19,7 +19,7 @@ do
 
     # for model in acet ae ceda csi glow good md nae oe pixelcnn ssd;
     # for model in prood;
-    for model in vit_hf_md prood;
+    for model in vit_hf_md ;
     do
         for ((idx=0;idx<split;idx++)); do
         echo $model
