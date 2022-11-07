@@ -39,6 +39,7 @@ parser.add_argument(
         "MNIST_OOD",
         "CIFAR10_OOD",
         "CIFAR100_OOD",
+        "RImgNet",
     ],
     help="inlier dataset dataset",
 )
@@ -63,7 +64,14 @@ d_cmd_cfg = parse_nested_args(d_cmd_cfg)
 
 
 """load model"""
-device = f"cuda:{args.device}"
+if args.device == "auto":
+    from gpu_utils import AutoGPUAllocation
+
+    gpu_allocation = AutoGPUAllocation()
+    device = gpu_allocation.device
+else:
+    device = f"cuda:{args.device}"
+
 cfg_detector = OmegaConf.load(args.config)
 model = get_detector(**cfg_detector, device=device, normalize=False)
 

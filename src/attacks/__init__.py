@@ -14,7 +14,12 @@ from attacks.advdist import (
     AdversarialDistributionTransform,
     AdversarialDistributionVQVAE,
 )
-from attacks.mcmc import CoordinateDescentSampler, MHSampler, RandomSampler
+from attacks.mcmc import (
+    CoordinateDescentSampler,
+    LangevinSampler,
+    MHSampler,
+    RandomSampler,
+)
 from augmentations import get_composed_augmentations
 from models import get_model, load_pretrained
 
@@ -29,28 +34,38 @@ def get_sampler(**sampler_cfg):
         sampler = RandomSampler(**sampler_cfg)
     elif sampler_type == "coord":
         sampler = CoordinateDescentSampler(**sampler_cfg)
+    elif sampler_type == "langevin":
+        sampler = LangevinSampler(**sampler_cfg)
     else:
         raise ValueError(f"Invalid sampler type: {sampler_type}")
     return sampler
 
 
-def get_detector(device="cpu", normalize=False, **cfg_detector):
+def get_detector(device="cpu", normalize=False, root="./", **cfg_detector):
     d_detector_aug = cfg_detector.pop("detector_aug", None)
-    no_grad = cfg_detector.pop("detector_no_grad", True)
+    no_grad_predict = cfg_detector.pop("no_grad_predict", True)
+    blackbox_only = cfg_detector.pop("blackbox_only", False)
     indist_dataset = cfg_detector.pop("indist_dataset", "CIFAR10")
     alias = cfg_detector.pop("alias", None)
-    detector, _ = load_pretrained(**cfg_detector["detector"], device=device)
+    detector, _ = load_pretrained(
+        **cfg_detector["detector"], device=device, root=os.path.join(root, "pretrained")
+    )
 
     aug = get_composed_augmentations(d_detector_aug)
     detector = Detector(
-        detector, bound=-1, transform=aug, no_grad=no_grad, use_rank=False
+        detector,
+        bound=-1,
+        transform=aug,
+        no_grad_predict=no_grad_predict,
+        blackbox_only=blackbox_only,
+        use_rank=False,
     )
     detector.to(device)
 
     if normalize:
         print("Normalizing detector score...")
         normalization_path = os.path.join(
-            "results", indist_dataset, alias, f"IN_score.pkl"
+            root, "results", indist_dataset, alias, f"IN_score.pkl"
         )
         detector.load_normalization(normalization_path, device=device)
     return detector
@@ -117,6 +132,7 @@ def get_advdist(cfg):
         cfg_stylegan2_gen = cfg_advdist.pop("stylegan2_g")
         g, _ = load_pretrained(**cfg_stylegan2_gen)
         g.to(cfg["device"])
+        g.eval()
         advdist = AdversarialDistributionStyleGAN2(
             generator=g, sampler=sampler, **cfg_advdist
         )

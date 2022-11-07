@@ -2,6 +2,7 @@ from itertools import product
 
 import numpy as np
 import torch
+import torch.autograd as autograd
 from tqdm import tqdm
 
 
@@ -427,3 +428,211 @@ class CoordinateDescentSampler:
             d_sample["min_E"] = d_sample["l_E"][argmin, range(len(argmin))]
             d_sample["min_img"] = d_sample["min_x"]
         return d_sample
+
+
+def sample_langevin_v2(
+    x,
+    model,
+    stepsize,
+    n_step,
+    noise_scale=None,
+    bound=None,
+    clip_grad=None,
+    reject_boundary=False,
+    noise_anneal=None,
+    noise_anneal_v2=None,
+    mh=False,
+    temperature=None,
+):
+    """Langevin Monte Carlo
+    x: torch.Tensor, initial points
+    model: An energy-based model. returns energy
+    stepsize: float
+    n_step: integer
+    noise_scale: Optional. float. If None, set to np.sqrt(stepsize * 2)
+    bound : tuple (start, end) or None boundary of square domain
+    reject_boundary: Reject out-of-domain samples if True. otherwise clip.
+    """
+    assert not (
+        (stepsize is None) and (noise_scale is None)
+    ), "stepsize and noise_scale cannot be None at the same time"
+    if noise_scale is None:
+        noise_scale = np.sqrt(stepsize * 2)
+    if stepsize is None:
+        stepsize = (noise_scale**2) / 2
+    noise_scale_ = noise_scale
+    stepsize_ = stepsize
+    if temperature is None:
+        temperature = 1.0
+
+    # initial data
+    x.requires_grad = True
+    E_x = model(x)
+    grad_E_x = autograd.grad(E_x.sum(), x, only_inputs=True)[0]
+    if clip_grad is not None:
+        # grad_E_x = clip_vector_norm(grad_E_x, max_norm=clip_grad)
+        grad_E_x.clamp_(-clip_grad, clip_grad)
+    E_y = E_x
+    grad_E_y = grad_E_x
+
+    l_sample = [x.detach().to("cpu")]
+    l_dynamics = []
+    l_drift = []
+    l_diffusion = []
+    l_accept = []
+    l_E = [E_x.detach().cpu()]
+    for i_step in tqdm(range(n_step)):
+        noise = torch.randn_like(x) * noise_scale_
+        dynamics = -stepsize_ * grad_E_x / temperature + noise
+        y = x + dynamics
+        reject = torch.zeros(len(y), dtype=torch.bool)
+
+        if bound == "spherical":
+            y = y / y.norm(dim=1, p=2, keepdim=True)
+        elif bound is not None:
+            if reject_boundary:
+                accept = ((y >= bound[0]) & (y <= bound[1])).view(len(x), -1).all(dim=1)
+                reject = ~accept
+                y[reject] = x[reject]
+            else:
+                y = torch.clamp(y, bound[0], bound[1])
+
+        # y_accept = y[~reject]
+        # E_y[~reject] = model(y_accept)
+        # grad_E_y[~reject] = autograd.grad(E_y.sum(), y_accept, only_inputs=True)[0]
+        E_y = model(y)
+        grad_E_y = autograd.grad(E_y.sum(), y, only_inputs=True)[0]
+
+        if clip_grad is not None:
+            # grad_E_y = clip_vector_norm(grad_E_y, max_norm=clip_grad)
+            grad_E_y.clamp_(-clip_grad, clip_grad)
+
+        if mh:
+            y_to_x = ((grad_E_x + grad_E_y) * stepsize_ - noise).view(len(x), -1).norm(
+                p=2, dim=1, keepdim=True
+            ) ** 2
+            x_to_y = (noise).view(len(x), -1).norm(dim=1, keepdim=True, p=2) ** 2
+            transition = -(y_to_x - x_to_y) / 4 / stepsize_  # B x 1
+            prob = -E_y + E_x
+            accept_prob = torch.exp((transition + prob) / temperature)[:, 0]  # B
+            reject = torch.rand_like(accept_prob) > accept_prob  # | reject
+            y[reject] = x[reject]
+            E_y[reject] = E_x[reject]
+            grad_E_y[reject] = grad_E_x[reject]
+            x = y
+            E_x = E_y
+            grad_E_x = grad_E_y
+            l_accept.append(~reject)
+
+        x = y
+        E_x = E_y
+        grad_E_x = grad_E_y
+
+        if noise_anneal is not None:
+            noise_scale_ = noise_scale / (1 + i_step)
+        if noise_anneal_v2 is not None:
+            noise_scale_ = noise_scale / (1 + i_step)
+            stepsize_ = stepsize / ((1 + i_step) ** 2)
+
+        l_dynamics.append(dynamics.detach().cpu())
+        l_drift.append((-stepsize * grad_E_x).detach().cpu())
+        l_diffusion.append(noise.detach().cpu())
+        l_sample.append(x.detach().cpu())
+        l_E.append(E_x.detach().cpu())
+
+    return {
+        "x": x.detach(),
+        "l_x": torch.stack(l_sample),
+        "l_dynamics": l_dynamics,
+        "l_drift": l_drift,
+        "l_diffusion": l_diffusion,
+        "l_accept": l_accept,
+        "l_E": torch.stack(l_E),
+    }
+
+
+class LangevinSampler:
+    """class for Langevin Monte Carlo"""
+
+    def __init__(
+        self,
+        n_step=None,
+        stepsize=None,
+        noise_std=None,
+        noise_anneal=None,
+        bound=None,
+        clip_langevin_grad=None,
+        reject_boundary=False,
+        mh=False,
+        initial_dist="uniform",
+        sample_shape=None,
+        T=1.0,
+    ):
+        """
+        n_step: the number of MCMC steps
+        stepsize, noise_std: gradient step size and noise standard deviation.
+        buffer_size: the size of buffer
+        bound: (lower, upper) or None. The range of valid value of x
+        reject_boundary: reject samples if it moves outside of bound
+        sample_shape: the shape of samples.
+                      set by NAE.set_x_shape() method
+        return_min: return minimum along the trajectory
+        """
+
+        self.n_step = n_step
+        self.stepsize = stepsize
+        self.noise_std = noise_std
+        self.noise_anneal = noise_anneal
+        self.bound = bound
+        self.clip_langevin_grad = clip_langevin_grad
+        self.reject_boundary = reject_boundary
+        self.mh = mh
+        self.initial_dist = initial_dist
+        self.sample_shape = tuple(sample_shape)
+        self.T = T
+
+    def sample(self, energy, n_sample=None, device=None, x0=None, replay=True, T=None):
+        """replay: If False, temporarily disable sample replay buffer"""
+        if x0 is None:
+            x0 = self.initial_sample(n_sample=n_sample, device=device)
+        if T is None:
+            T = self.T
+        d_sample_result = sample_langevin_v2(
+            x0.detach(),
+            energy,
+            stepsize=self.stepsize,
+            n_step=self.n_step,
+            noise_scale=self.noise_std,
+            bound=self.bound,
+            noise_anneal=self.noise_anneal,
+            clip_grad=self.clip_langevin_grad,
+            mh=self.mh,
+            reject_boundary=self.reject_boundary,
+            temperature=self.T,
+        )
+        sample_result = d_sample_result["x"]
+        d_sample_result["x_0"] = x0
+        return d_sample_result
+
+    def initial_sample(self, n_sample, device):
+        l_sample = []
+
+        shape = (n_sample,) + self.sample_shape
+        x0_new = initial_sample(self.initial_dist, shape, device)
+        l_sample.append(x0_new)
+        return torch.cat(l_sample).to(device)
+
+    def initial_sample(self, n_sample, device):
+        shape = (n_sample,) + self.sample_shape
+        if self.initial_dist == "gaussian":
+            x0_new = torch.randn(shape, dtype=torch.float)
+        elif self.initial_dist == "uniform":
+            x0_new = torch.rand(shape, dtype=torch.float)
+            x0_new = x0_new * (self.bound[1] - self.bound[0]) + self.bound[0]
+        elif self.initial_dist == "uniform_sphere":
+            x0_new = torch.randn(shape, dtype=torch.float)
+            x0_new = x0_new / (x0_new).norm(dim=1, keepdim=True)
+        else:
+            raise ValueError(f"Invalid initial_dist: {self.initial_dist}")
+
+        return x0_new.to(device)

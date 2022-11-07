@@ -8,9 +8,13 @@ import torchvision.transforms.functional as tf
 from PIL import Image, ImageOps
 from torchvision.transforms import (
     ColorJitter,
+    Compose,
+    Normalize,
     RandomApply,
     RandomChoice,
     RandomRotation,
+    Resize,
+    ToTensor,
 )
 
 
@@ -119,3 +123,19 @@ class GaussianDequantize:
     def __call__(self, img):
         img = img + torch.randn_like(img) * 0.01
         return img
+
+
+class VITPreprocessEval:
+    """preprocessing transformations for VIT in the eval model"""
+
+    def __init__(self, size):
+        self.transform = Compose(
+            [
+                Resize(size),
+                # ToTensor(),
+                Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+            ]
+        )
+
+    def __call__(self, img):
+        return self.transform(img)

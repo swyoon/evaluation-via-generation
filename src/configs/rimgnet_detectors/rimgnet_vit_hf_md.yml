@@ -1,0 +1,11 @@
+detector:
+  identifier: rimgnet_ood_vit/hf
+  config_file: vit_md.yml
+  ckpt_file: pytorch_model.bin
+detector_aug:
+  vit_eval: 
+    size: 224
+alias: vit_hf_md
+indist_dataset: RImgNet 
+blackbox_only: false 
+no_grad_predict: true 

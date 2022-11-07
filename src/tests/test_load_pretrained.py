@@ -149,7 +149,16 @@ cifar100_ood_vit = (
     {},
 )
 
+cifar_ood_vit = (
+    "cifar_ood_vit/hf",
+    "vit_md.yml",
+    "pytorch_model.bin",
+    {},
+)
+rimgnet_ood_vit = ("rimgnet_ood_vit/hf", "vit_md.yml", "pytorch_model.bin", {})
+
 cifar_ood_prood = ("cifar_ood_prood/prood_3", "prood_3.yml", "prood_3.pt", {})
+rimgnet_ood_prood = ("rimgnet_ood_prood/prood_4", "prood_4.yml", "prood_4.pt", {})
 
 
 ####   StyleGANs
@@ -216,6 +225,34 @@ celeba32_stylegan2_gen_ada_test_z512 = (
     {},
 )
 
+cars_stylegan2_gen_ada_test_bigparam_z16 = (
+    "cars_stylegan2/ada_test_bigparam_z16",
+    "generator.yml",
+    "model=G_ema-current-weights-step=200000.pth",
+    {},
+)
+
+flowers_stylegan2_gen_ada_test_z16 = (
+    "flowers_stylegan2/ada_test_z16",
+    "generator.yml",
+    "model=G_ema-current-weights-step=200000.pth",
+    {},
+)
+
+fgvc_stylegan2_gen_ada_test_bigparam_z16 = (
+    "fgvc_stylegan2/ada_test_bigparam_z16",
+    "generator.yml",
+    "model=G_ema-current-weights-step=200000.pth",
+    {},
+)
+
+fgvc_stylegan2_gen_z16 = (
+    "fgvc_projgan/stylegan2_z16",
+    "generator.yml",
+    "G_ema.pth",
+    {},
+)
+
 
 l_setting = [
     cifar_glow,
@@ -260,6 +297,15 @@ l_setting = [
     cifar_ood_prood,
 ]
 l_setting = [cifar100_ood_vit]
+l_setting = [cifar_ood_vit]
+l_setting = [rimgnet_ood_prood]
+l_setting = [rimgnet_ood_vit]
+l_setting = [
+    cars_stylegan2_gen_ada_test_bigparam_z16,
+    flowers_stylegan2_gen_ada_test_z16,
+    fgvc_stylegan2_gen_ada_test_bigparam_z16,
+]
+l_setting = [fgvc_stylegan2_gen_z16]
 
 
 @pytest.mark.parametrize("model_setting", l_setting)

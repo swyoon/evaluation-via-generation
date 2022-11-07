@@ -18,6 +18,7 @@ from augmentations.augmentations import (
     RandomRotate90,
     ToGray,
     UniformDequantize,
+    VITPreprocessEval,
 )
 
 logger = logging.getLogger("ptsemseg")
@@ -34,6 +35,7 @@ key2aug = {
     "togray": ToGray,
     "normalize": Normalize,
     "totensor": ToTensor,
+    "vit_eval": VITPreprocessEval,
 }
 
 

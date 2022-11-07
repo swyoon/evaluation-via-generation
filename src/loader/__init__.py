@@ -1,5 +1,6 @@
 import copy
 import json
+import os
 
 import numpy as np
 import torch
@@ -309,6 +310,71 @@ def get_dataset(data_dict, split_type=None, data_aug=None, dequant=None):
             transform=ToTensor(),
             seed=seed,
             train_split_ratio=train_split_ratio,
+        )
+    elif name == "RImgNet":
+        from loader.imagenet_augmentation import get_imageNet_augmentation
+        from loader.imagenet_subsets import RestrictedImageNet
+
+        augm_type = "none"
+        size = 224
+        path = os.path.join(data_dict["path"], "ImageNet2012")
+        transform = get_imageNet_augmentation(
+            type=augm_type, out_size=size, config_dict=None
+        )
+        split = "train" if split_type == "training" else "val"
+        balanced = False
+        dataset = RestrictedImageNet(
+            path, split=split, transform=transform, balanced=balanced
+        )
+
+    elif name == "Flowers":
+        from loader.flowers import Flowers
+        from loader.imagenet_augmentation import get_imageNet_augmentation
+
+        augm_type = "none"
+        size = 224
+        path = os.path.join(data_dict["path"], "flowers")
+        if split_type == "training":
+            split = "train"
+        elif split_type == "validation":
+            split = "val"
+        elif split_type == "evaluation":
+            # split = "test"
+            split = "test_wo_insect"
+        transform = get_imageNet_augmentation(
+            type=augm_type, out_size=size, config_dict=None
+        )
+        dataset = Flowers(path, split, transform=transform)
+    elif name == "Cars":
+        from loader.imagenet_augmentation import get_imageNet_augmentation
+        from loader.stanford_cars import StanfordCars
+
+        augm_type = "none"
+        size = 224
+        transform = get_imageNet_augmentation(
+            type=augm_type, out_size=size, config_dict=None
+        )
+        path = os.path.join(data_dict["path"], "stanford_cars")
+        train = True if split_type == "training" else False
+        dataset = StanfordCars(path, train, transform=transform)
+    elif name == "FGVC":
+        from loader.fgvc import FGVCAircraft
+        from loader.imagenet_augmentation import get_imageNet_augmentation
+
+        augm_type = "none"
+        size = 224
+        transform = get_imageNet_augmentation(
+            type=augm_type, out_size=size, config_dict=None
+        )
+        path = os.path.join(data_dict["path"], "FGVC", "fgvc-aircraft-2013b")
+        if split_type == "training":
+            split = "train"
+        elif split_type == "validation":
+            split = "val"
+        elif split_type == "evaluation":
+            split = "test"
+        dataset = FGVCAircraft(
+            path, class_type="variant", split=split, transform=transform
         )
     else:
         n_classes = data_dict["n_classes"]

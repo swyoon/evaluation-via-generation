@@ -2,14 +2,18 @@
 
 # evaluation of adversarial samples
 # pairwise
-device=0
-dataset=svhn
-# dataset=celeba
+device=1
+# dataset=svhn
+dataset=cars
+# dataset=fgvc
+# dataset=flowers
+in_dataset=RImgNet
+in_dataset_lower=rimgnet
 # variation=coord
-# variation=affine
+variation=affine
 # variation=colorV1
-variation=stylegan2ada_mh
-variation=stylegan2ada_z32_mh
+# variation=stylegan2ada_mh
+# variation=stylegan2ada_z512_mh
 mode=pairwise
 # mode=pairwise
 # postfix=v0115
@@ -36,20 +40,23 @@ done
 
 else
 
+# for model in vit_hf_md 
 for model in prood 
 # for model in ae pixelcnn glow nae good acet ceda ssd md oe csi 
 # for model in nae good acet ceda ssd md oe csi 
 do
     # for target in nae good acet ceda ssd md atom oe rowl csi 
-    for target in prood
+    # for target in vit_hf_md
+    for target in prood 
     do
     # target=${model}
 
     python evaluate_advdist_pairwise.py \
-        --detector configs/cifar_detectors/cifar_${model}.yml \
-        --target results/CIFAR10/${target}/${dataset}_${variation}/run/cifar_${target}_${dataset}_${variation}.yml\
-        --logdir results/CIFAR10/pairwise/${model}/${target}/${dataset}_${variation}\
-        --device ${device}
+        --detector configs/${in_dataset_lower}_detectors/${in_dataset_lower}_${model}.yml \
+        --target results/${in_dataset}/${target}/${dataset}_${variation}/run/${in_dataset_lower}_${target}_${dataset}_${variation}.yml\
+        --logdir results/${in_dataset}/pairwise/${model}/${target}/${dataset}_${variation}\
+        --device ${device} \
+        --in-dataset ${in_dataset} \
 
     done
 done

@@ -270,3 +270,83 @@ def test_ad_stylegan2_cfg():
     d_sample = advdist.sample(n_sample=2, device="cpu")
     assert "min_x" in d_sample
     assert "min_E" in d_sample
+
+
+def test_advdist_stylegan2_lgv_cfg():
+    detector = Detector(DummyDetector())
+    s_cfg = """
+        advdist:
+          name: adstylegan2
+          blackbox: false
+          stylegan2_g:
+            arch: stylegan2_g
+            identifier: svhn_stylegan2/z64
+            config_file: generator.yml
+            ckpt_file: model=G_ema-best-weights-step=188000.pth
+          sampler:
+            name: langevin
+            n_step: 3
+            stepsize: 0.1
+            bound: spherical
+            T: 0.1
+            sample_shape: [64]
+            initial_dist: uniform_sphere
+        device: cpu
+        """
+    cfg = OmegaConf.create(s_cfg)
+    advdist = get_advdist(cfg)
+    advdist.detector = detector
+
+    d_sample = advdist.sample(n_sample=2, device="cpu")
+    assert "min_x" in d_sample
+    assert "min_E" in d_sample
+
+
+def test_adtr_lgv_from_cfg():
+    detector = Detector(DummyDetector())
+    s_cfg = """
+        advdist:
+          name: adtr
+          blackbox: false
+          transform: colorV2
+          z_bound: [0, 1]
+          sampler:
+            name: langevin
+            n_step: 3
+            stepsize: 0.1
+            bound: [0, 1]
+            T: 0.1
+            sample_shape: [4]
+        """
+    cfg = OmegaConf.create(s_cfg)
+    advdist = get_advdist(cfg)
+    advdist.detector = detector
+    img = torch.rand(2, 3, 32, 32)
+    d_sample = advdist.sample(img)
+    assert "min_x" in d_sample
+    assert "min_E" in d_sample
+
+
+def test_adtr_lgv_from_cfg_2():
+    detector = Detector(DummyDetector())
+    s_cfg = """
+        advdist:
+          name: adtr
+          blackbox: false
+          transform: affineV1 
+          z_bound: [0, 1]
+          sampler:
+            name: langevin
+            n_step: 3
+            stepsize: 0.1
+            bound: [0, 1]
+            T: 0.1
+            sample_shape: [5]
+        """
+    cfg = OmegaConf.create(s_cfg)
+    advdist = get_advdist(cfg)
+    advdist.detector = detector
+    img = torch.rand(2, 3, 32, 32)
+    d_sample = advdist.sample(img)
+    assert "min_x" in d_sample
+    assert "min_E" in d_sample

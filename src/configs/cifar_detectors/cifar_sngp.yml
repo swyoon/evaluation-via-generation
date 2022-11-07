@@ -6,5 +6,7 @@ detector_aug:
   normalize:
     mean: [0.4914, 0.4822, 0.4465]
     std: [0.2023, 0.1994, 0.2010]
-detector_no_grad: True 
 alias: sngp
+blackbox_only: false
+no_grad_predict: true 
+indist_dataset: CIFAR10

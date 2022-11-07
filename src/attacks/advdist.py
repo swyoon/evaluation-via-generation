@@ -3,11 +3,17 @@ import functools
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torchvision.transforms.functional import normalize
 from torchvision.utils import make_grid
 
 from attacks.mcmc import sample_discrete_gibbs, sample_mh
-from attacks.transforms import apply_affine_batch, apply_colortransform_batch
+from attacks.transforms import (
+    apply_affine_batch,
+    apply_affine_kornia,
+    apply_colortransform_batch,
+    apply_colortransform_kornia,
+)
 
 
 class AdversarialDistribution(nn.Module):
@@ -372,7 +378,6 @@ class AdversarialDistributionAE(nn.Module):
         assert (z0 is None) != (n_sample is None and device is None)
         if z0 is None:
             z0 = self._initial_sample(n_sample, device)
-        print(self.block)
         return sample_mh(
             z0,
             self._energy_z,
@@ -514,9 +519,16 @@ class AdversarialDistributionAE(nn.Module):
 
 
 class AdversarialDistributionTransform:
-    def __init__(self, detector=None, sampler=None, transform="affineV0", z_bound=None):
+    def __init__(
+        self,
+        detector=None,
+        sampler=None,
+        transform="affineV0",
+        z_bound=None,
+        blackbox=True,
+    ):
         """
-        sampler: 'mh', 'random', 'gd'
+        blackbox: True if this adversarial distribution does not require gradients
         """
         self.detector = detector
         self.sampler = sampler
@@ -530,6 +542,28 @@ class AdversarialDistributionTransform:
                 ty_bound=(-10, 10),
                 scale_bound=(0.9, 1.5),
                 shear_bound=(-30, 30),
+            )
+        elif transform == "affineV1":  # kornia-based implementation
+            self.D = 5
+            self.transform = functools.partial(
+                apply_affine_kornia,
+                a_bound=(-45, 45),
+                tx_bound=(-5, 5),
+                ty_bound=(-5, 5),
+                scale_bound=(0.9, 1.5),
+                shear_bound=(-1 / np.sqrt(3), 1 / np.sqrt(3)),
+            )
+        elif transform == "affineV2":
+            # kornia-based implementation
+            # adjusted for RImgNet
+            self.D = 5
+            self.transform = functools.partial(
+                apply_affine_kornia,
+                a_bound=(-45, 45),
+                tx_bound=(-45, 45),  # approx 20%
+                ty_bound=(-45, 45),
+                scale_bound=(0.9, 1.5),
+                shear_bound=(-1 / np.sqrt(3), 1 / np.sqrt(3)),
             )
         elif transform == "colorV0":
             self.D = 4
@@ -550,28 +584,50 @@ class AdversarialDistributionTransform:
                 s_bound=(0, 2),
                 h_bound=(-0.5, 0.5),
             )
+        elif transform == "colorV2":  # kornia-based implementation
+            """reduce saturation and hue range according to SimClr's ColorJitter setting"""
+            self.D = 4
+            self.transform = functools.partial(
+                apply_colortransform_kornia,
+                b_bound=(0.5, 1.5),
+                c_bound=(0.5, 1.5),
+                s_bound=(0.5, 1.5),
+                h_bound=(-0.2, 0.2),
+            )
+
         else:
             raise ValueError(f"Invalid transform name: {transform}")
 
         self.z_bound = z_bound
+        self.blackbox = blackbox
 
-    def energy(self, z, img):
+    # def energy(self, z, img):
+    def energy(self, z):
         """
         img: a batch of images [N, 3, H, W]
         z: a batch of transform parameters [N, D]
         """
-        return self.detector.predict(self.transform(img, z))
+        if self.blackbox:
+            with torch.no_grad():
+                zz = self.transform(self.img, z)
+            return self.detector.predict(zz)
+        else:
+            zz = self.transform(self.img, z)
+            return self.detector.predict(zz, requires_grad=True)
 
     def sample(self, img, z0=None, writer=None):
-        energy = functools.partial(self.energy, img=img)
-        d_sample = self.sampler.sample(energy, n_sample=len(img), device=img.device)
+        # energy = functools.partial(self.energy, img=img)
+        self.img = img
+        d_sample = self.sampler.sample(
+            self.energy, n_sample=len(img), device=img.device
+        )
 
         # compute minimum energy
         argmin = d_sample["l_E"].argmin(dim=0)
         d_sample["min_x"] = d_sample["l_x"][argmin, range(len(argmin)), :]
         d_sample["min_E"] = d_sample["l_E"][argmin, range(len(argmin))]
-        d_sample["min_img"] = self.transform(img, d_sample["min_x"])
-        d_sample["last_img"] = self.transform(img, d_sample["x"])
+        d_sample["min_img"] = self.transform(img, d_sample["min_x"].to(img.device))
+        d_sample["last_img"] = self.transform(img, d_sample["x"].to(img.device))
 
         return d_sample
 
@@ -599,6 +655,8 @@ class AdversarialDistributionStyleGAN2:
         sampler=None,
         truncation_psi=1.0,
         truncation_cutoff=None,
+        blackbox=True,
+        resize=None,
     ):
         """StyleGAN2 generator"""
         self.detector = detector
@@ -606,9 +664,32 @@ class AdversarialDistributionStyleGAN2:
         self.generator = generator
         self.truncation_psi = truncation_psi
         self.truncation_cutoff = truncation_cutoff
+        self.blackbox = blackbox
+        self.resize = resize
 
-    def generate(self, z, truncation_psi=None, truncation_cutoff=None):
-        with torch.no_grad():
+    def generate(
+        self, z, truncation_psi=None, truncation_cutoff=None, no_grad=None, resize=None
+    ):
+        no_grad = self.blackbox if no_grad is None else no_grad
+        resize = self.resize if resize is None else resize
+
+        if no_grad:
+            with torch.no_grad():
+                i = self.generator(
+                    z,
+                    None,
+                    truncation_psi=self.truncation_psi
+                    if truncation_psi is None
+                    else truncation_psi,
+                    truncation_cutoff=self.truncation_cutoff
+                    if truncation_cutoff is None
+                    else truncation_cutoff,
+                )
+                i = ((i.detach() + 1) / 2).clamp(0, 1)
+                if resize is not None:
+                    i = F.interpolate(i, resize, mode="bilinear", align_corners=False)
+                return i
+        else:
             i = self.generator(
                 z,
                 None,
@@ -619,10 +700,19 @@ class AdversarialDistributionStyleGAN2:
                 if truncation_cutoff is None
                 else truncation_cutoff,
             )
-        return ((i.detach() + 1) / 2).clamp(0, 1)
+            i = ((i + 1) / 2).clamp(0, 1)
+            if resize is not None:
+                i = F.interpolate(i, resize, mode="bilinear", align_corners=False)
+            return i
 
     def energy(self, z):
-        return self.detector.predict(self.generate(z))
+        x = self.generate(z)
+        # if self.resize:
+        #     x = F.interpolate(x, size=self.resize, mode="bilinear")
+        if self.blackbox:
+            return self.detector.predict(x)
+        else:
+            return self.detector.predict(x, requires_grad=True)
 
     def sample(self, z0=None, n_sample=None, device=None, img=None):
         if img is not None:
