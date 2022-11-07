@@ -121,7 +121,7 @@ for ood_name, dl in zip(l_ood, l_ood_dl):
     print(f"{time() - time_s:.3f} sec for outlier inference for OOD {ood_name}")
     
     time_s = time()
-    attacked_out_pred = batch_attack(model, dl, device=device, no_grad=False)    
+    attacked_out_pred = batch_attack(model, dl, device=device, no_grad=False, use_label=False)    
     print(f"{time() - time_s:.3f} sec for outlier attack for OOD {ood_name}")
     auc = roc_btw_arr(out_pred, in_pred)
     aauc = roc_btw_arr(attacked_out_pred, in_pred)
