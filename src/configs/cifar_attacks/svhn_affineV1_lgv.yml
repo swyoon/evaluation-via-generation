@@ -4,7 +4,7 @@ advdist:
   z_bound: [0, 1]
   sampler: 
     name: langevin
-    stepsize: 0.1
+    noise_std: 0.1
     n_step: 2000
     bound: [0, 1]
     T: 1

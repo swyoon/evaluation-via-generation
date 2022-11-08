@@ -10,6 +10,8 @@ import pandas as pd
 import streamlit as st
 import torch
 
+st.set_page_config(layout="wide")
+
 st.header("CIFAR10")
 
 l_model = [
@@ -32,12 +34,12 @@ l_model = [
 ]
 l_variation = [
     "svhn_clean",
-    "svhn_affine",
-    "svhn_colorV1",
+    "svhn_affineV1_mh",
+    "svhn_colorV2_mh",
     "svhn_stylegan2ada_z16_mh",
     "celeba_clean",
-    "celeba_affine",
-    "celeba_colorV1",
+    "celeba_affineV1_mh",
+    "celeba_colorV2_mh",
     "celeba_stylegan2ada_z16_mh",
     # "svhn_stylegan2ada_z32_mh",
     # "svhn_stylegan2ada_z512_mh",
@@ -99,11 +101,11 @@ df = pd.DataFrame(df)
 l_col = [
     "model",
     "svhn_clean_auc",
-    "svhn_affine_auc",
-    "svhn_colorV1_auc",
+    "svhn_affineV1_mh_auc",
+    "svhn_colorV2_mh_auc",
     "celeba_clean_auc",
-    "celeba_affine_auc",
-    "celeba_colorV1_auc",
+    "celeba_affineV1_mh_auc",
+    "celeba_colorV2_mh_auc",
     "svhn_clean_rank",
     "svhn_stylegan2ada_z16_mh_rank",
     "celeba_clean_rank",
