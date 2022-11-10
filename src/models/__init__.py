@@ -813,7 +813,7 @@ def load_pretrained(identifier, config_file, ckpt_file, root="pretrained", **kwa
         return load_pretrained_vit_hf(cfg, root, identifier, ckpt_file)
     elif model_name == "prood":
         return load_pretrained_prood(cfg, root, identifier, ckpt_file)
-    elif model_name == "plain_from_prood" or model_name == "oe_from_prood":
+    elif (model_name == "plain_from_prood") or (model_name == "oe_from_prood"):
         return load_pretraiend_plain_or_oe_from_prood(cfg, root, identifier, ckpt_file)
     else:
         model = get_model(cfg)
