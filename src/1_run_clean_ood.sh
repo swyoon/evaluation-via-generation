@@ -22,8 +22,8 @@ configs=(# cifar_ae.yml
          cifar_prood.yml
      )
 configs=(cifar_vit_hf_md.yml)
-configs=(cifar_prood.yml)
-configs=()
+# configs=(cifar_prood.yml)
+# configs=()
 
 for config in "${configs[@]}"; do
    echo ${config}
@@ -43,8 +43,8 @@ done
 # ood=OpenImages-O,EuroSAT
 ood=OpenImages-O
 # configs=(rimgnet_prood.yml)
-configs=( rimgnet_vit_hf_md.yml rimgnet_prood.yml )
-# configs=()
+# configs=( rimgnet_vit_hf_md.yml rimgnet_prood.yml )
+configs=()
 for config in "${configs[@]}"; do
    echo ${config}
     python evaluate_ood.py --dataset RImgNet --ood ${ood} \
