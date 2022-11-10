@@ -1,0 +1,9 @@
+detector:
+  identifier: rimgnet_ood_prood/plain
+  config_file: plain.yml
+  ckpt_file: plain.pt
+detector_aug: null
+alias: msp 
+indist_dataset: RImgNet
+blackbox_only: false 
+no_grad_predict: true 

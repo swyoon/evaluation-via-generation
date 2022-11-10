@@ -22,11 +22,10 @@ from omegaconf import OmegaConf
 from torch.utils import data
 
 from attacks import get_detector
+from attacks.grad_based_attacks import batch_attack
 from loader import get_dataloader
 from models import get_model, load_pretrained
 from utils import batch_run, mkdir_p, parse_nested_args, parse_unknown_args, roc_btw_arr
-
-from attacks.grad_based_attacks import batch_attack
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config", type=str, help="path to detector config")
@@ -37,11 +36,7 @@ parser.add_argument("--device", type=str, help="device")
 parser.add_argument(
     "--dataset",
     type=str,
-    choices=[
-        "MNIST_OOD",
-        "CIFAR10_OOD",
-        "CIFAR100_OOD",
-    ],
+    choices=["CIFAR10_OOD", "RImgNet"],
     help="inlier dataset dataset",
 )
 
@@ -104,8 +99,6 @@ for ood_name in l_ood:
     l_ood_dl.append(dl)
 
 """Compute AAUC with Graident-Based Attacks (PGD-type 1, 2, 3)"""
-if model.no_grad:
-    model.no_grad = False
 time_s = time()
 in_pred = batch_run(model, in_dl, device=device, no_grad=False)
 print(f"{time() - time_s:.3f} sec for inlier inference")
@@ -114,19 +107,20 @@ if args.in_split == "evaluation":
 else:
     in_score_file = os.path.join(result_dir, f"IN_{args.in_split}_score.pkl")
 torch.save(in_pred, in_score_file)
-    
+
 for ood_name, dl in zip(l_ood, l_ood_dl):
     time_s = time()
     out_pred = batch_run(model, dl, device=device, no_grad=False)
     print(f"{time() - time_s:.3f} sec for outlier inference for OOD {ood_name}")
-    
+
     time_s = time()
-    attacked_out_pred = batch_attack(model, dl, device=device, no_grad=False, use_label=False)    
+    attacked_out_pred = batch_attack(
+        model, dl, device=device, no_grad=False, use_label=False
+    )
     print(f"{time() - time_s:.3f} sec for outlier attack for OOD {ood_name}")
     auc = roc_btw_arr(out_pred, in_pred)
     aauc = roc_btw_arr(attacked_out_pred, in_pred)
-    with open(os.path.join(result_dir, f"{ood_name}.txt"), "w") as f:
-        f.write("auc: " + str(auc) + ", aauc: " + str(aauc))
+    with open(os.path.join(result_dir, f"{ood_name}_AAUC.txt"), "w") as f:
+        # f.write("auc: " + str(auc) + ", aauc: " + str(aauc))
+        f.write("aauc: " + str(aauc))
     print(ood_name, auc, aauc)
-
-

@@ -8,7 +8,7 @@ configs=(
         # cifar_ae.yml
         #  cifar_pixelcnn.yml 
         #  cifar_md.yml
-         cifar_oe.yml
+         # cifar_oe.yml
         #  cifar_nae.yml
         #  cifar_glow.yml
         #  cifar_csi.yml
@@ -21,11 +21,12 @@ configs=(
         #  cifar_due.yml
         #  cifar_sngp.yml
         #  cifar_prood.yml
+         rimgnet_prood.yml
      )
 
 for config in "${configs[@]}"; do
    echo ${config}
     # python evaluate_ood.py --dataset CIFAR10_OOD --ood ${ood} \
-    python evaluate_grad_attack_ood.py --dataset CIFAR10_OOD  --ood SVHN_OOD \
-        --config configs/cifar_detectors/${config} --device ${device} --detector_no_grad False
+    python evaluate_grad_attack_ood.py --dataset RImgNet  --ood FGVC \
+        --config configs/rimgnet_detectors/${config} --device ${device}
 done

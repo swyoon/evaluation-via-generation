@@ -37,9 +37,23 @@ if args.dataset == "CIFAR10":
         "vit_hf_md",
     ]
     l_ood = ["svhn", "celeba"]
-    l_attack = ["affineV1_mh", "colorV1_mh", "colorV2_mh"]
+    l_attack = [
+        "affineV1_random",
+        "affineV1_mh",
+        "colorV1_random",
+        "colorV1_mh",
+        "pgstylegan2_z16_random",
+    ]
 elif args.dataset == "RImgNet":
     l_models = ["prood", "vit_hf_md"]
+    l_ood = ["fgvc", "flowers", "eurosat"]
+    l_attack = [
+        "affineV2_random",
+        "affineV2_mh",
+        "colorV1_random",
+        "colorV1_mh",
+        "pgstylegan2_z16_random",
+    ]
 else:
     raise ValueError("dataset not supported")
 
@@ -72,11 +86,35 @@ for model in l_models:
             x_saved_samples = torch.cat(l_sample)
             n_samples = len(x_saved_samples)
 
-        if n_samples > 1000:
-            status = "OK"
-        else:
-            status = f"sample: {n_samples}"
+        status = f"sample: {n_samples}"
 
         print(f"    {ood}_{attack}: {status}")
 
-    # check if merged result exists
+print()
+print()
+print("###############   Merged Results")
+print()
+# check if merged result exists
+for model in l_models:
+    print("Model: {}".format(model))
+    model_dir = os.path.join(root, args.dataset, "pairwise", model, model)
+    assert os.path.exists(model_dir), f"{model} result directory does not exist"
+    l_result_dir = [
+        s
+        for s in os.listdir(model_dir)
+        if not s.endswith("tensorboard")
+        and not s.endswith(".txt")
+        and not s.endswith(".pkl")
+    ]
+
+    for ood, attack in itertools.product(l_ood, l_attack):
+        result_dir = os.path.join(model_dir, f"{ood}_{attack}")
+        if not os.path.exists(result_dir):
+            n_samples = 0
+        else:
+            samples = torch.load(os.path.join(result_dir, "sample_x.pkl"))
+
+            n_samples = len(samples)
+
+        status = f"\t{n_samples}"
+        print(f"    {ood}_{attack}: {status}")

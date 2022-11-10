@@ -2,19 +2,18 @@ advdist:
   name: adstylegan2
   stylegan2_g:
     arch: stylegan2_g
-    identifier: fgvc_stylegan2/ada_test_bigparam_z16
+    identifier: flowers_projgan/stylegan2_z16
     config_file: generator.yml
-    ckpt_file: model=G_ema-current-weights-step=200000.pth
+    ckpt_file: G_ema.pth
   sampler: 
-    name: mh
-    stepsize: 0.1
+    name: random
     n_step: 2000
     bound: spherical
-    T: 1
     initial_dist: uniform_sphere
     sample_shape: [16]
   truncation_psi: 0.9
   resize: 224
+  blackbox: True
 data:
   indist_val:
     dataset: RImgNet 
@@ -29,9 +28,8 @@ data:
     n_workers: 4
     split: evaluation 
   out_eval:
-    dataset: FGVC 
+    dataset: Flowers 
     path: datasets
     split: evaluation 
     batch_size: 500 
     n_workers: 4
-    size: 32

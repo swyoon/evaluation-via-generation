@@ -1,11 +1,9 @@
 advdist:
   name: adtr
-  transform: colorV2
+  transform: colorV1
   z_bound: [0, 1]
   sampler:
-    name: mh 
-    T: 1
-    stepsize: 0.1
+    name: random 
     n_step: 2000
     bound: [0, 1] 
     initial_dist: uniform
