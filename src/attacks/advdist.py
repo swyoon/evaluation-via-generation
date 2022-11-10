@@ -578,7 +578,7 @@ class AdversarialDistributionTransform:
             """reduce range for brightness and contrast -- colorV0 makes human face unrecognizable"""
             self.D = 4
             self.transform = functools.partial(
-                apply_colortransform_batch,
+                apply_colortransform_kornia,
                 b_bound=(0.5, 1.5),
                 c_bound=(0.5, 1.5),
                 s_bound=(0, 2),

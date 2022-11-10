@@ -4,12 +4,13 @@ advdist:
   z_bound: [0, 1]
   sampler: 
     name: langevin
-    noise_std: 0.1
+    noise_std: 0.01
     n_step: 2000
     bound: [0, 1]
     T: 1
     initial_dist: uniform
     sample_shape: [5]
+    mh: True
   blackbox: False
 data:
   indist_val:

@@ -10,6 +10,7 @@ advdist:
     bound: [0, 1] 
     initial_dist: uniform
     sample_shape: [4]
+  blackbox: True
 data:
   indist_val:
     dataset: CIFAR10_OOD 
