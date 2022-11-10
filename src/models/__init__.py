@@ -69,7 +69,6 @@ from models.pixelcnn import PixelCNN_OC
 # from models.ViT import load_pretrained_vit_tf
 from models.ViT_HF import load_pretrained_vit_hf
 
-
 def get_net(in_dim, out_dim, **kwargs):
     nh = kwargs.get("nh", 8)
     out_activation = kwargs.get("out_activation", "linear")
@@ -814,6 +813,8 @@ def load_pretrained(identifier, config_file, ckpt_file, root="pretrained", **kwa
         return load_pretrained_vit_hf(cfg, root, identifier, ckpt_file)
     elif model_name == "prood":
         return load_pretrained_prood(cfg, root, identifier, ckpt_file)
+    elif model_name == "plain_from_prood" or model_name == "oe_from_prood":
+        return load_pretraiend_plain_or_oe_from_prood(cfg, root, identifier, ckpt_file)
     else:
         model = get_model(cfg)
         ckpt = torch.load(ckpt_path, map_location="cpu")
@@ -1225,3 +1226,17 @@ def load_pretrained_prood(cfg, root, identifier, ckpt_file):
     model.net.load_state_dict(torch.load(checkpoint, map_location="cpu"))
     model.eval()
     return model, cfg
+
+def load_pretraiend_plain_or_oe_from_prood(cfg, root, identifier, ckpt_file):
+    from models.prood import Plain_or_OE_from_Prood
+    from models.prood.models.resnet import get_ResNet
+    arch_dset_in_name = cfg["model"]["classifier"].dset_in_name
+    classifier = get_ResNet(dset=arch_dset_in_name)
+    
+    model = Plain_or_OE_from_Prood(classifier)
+    
+    checkpoint = os.path.join(root, identifier, ckpt_file)
+    model.net.load_state_dict(torch.load(checkpoint, map_location="cpu"))
+    model.eval()
+    return model, cfg
+    
