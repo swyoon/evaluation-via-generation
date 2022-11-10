@@ -1,0 +1,9 @@
+detector:
+  identifier: rimgnet_ood_prood/oe
+  config_file: oe.yml
+  ckpt_file: oe.pt
+detector_aug: null
+alias: oe 
+indist_dataset: RImgNet
+blackbox_only: false 
+no_grad_predict: true 
