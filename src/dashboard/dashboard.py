@@ -43,6 +43,8 @@ l_variation = [
     "celeba_stylegan2ada_z16_mh",
     # "svhn_stylegan2ada_z32_mh",
     # "svhn_stylegan2ada_z512_mh",
+    # "svhn_linf",
+    # "celeba_linf"
 ]
 
 result_dir = "../results/CIFAR10/pairwise/"
@@ -101,9 +103,11 @@ df = pd.DataFrame(df)
 l_col = [
     "model",
     "svhn_clean_auc",
+    # "svhn_linf_auc",
     "svhn_affineV1_mh_auc",
     "svhn_colorV2_mh_auc",
     "celeba_clean_auc",
+    # "celeba_linf_auc",
     "celeba_affineV1_mh_auc",
     "celeba_colorV2_mh_auc",
     "svhn_clean_rank",
@@ -112,6 +116,32 @@ l_col = [
     "celeba_stylegan2ada_z16_mh_rank",
 ]
 st.table(df[l_col])
+
+"""generate latex code for table"""
+s = ""
+for i, row in df[l_col].iterrows():
+    if row["model"] == "vit_hf_md":
+        s += f"ViT"
+    else:
+        s += f'{row["model"].upper()}'
+    for j, col in enumerate(l_col[1:]):
+        if col.endswith("auc"):
+            if row[col] == -1:
+                s += f" & "
+            elif row[col] > 0.999:
+                s += "  & " + f"{row[col]:0.3f}"
+            else:
+                s += "  & " + f"{row[col]:0.3f}"[1:]
+        else:
+            s += f"  & {row[col]}"
+
+    if i == 2:
+        s += " \\\\ \n    \\midrule   \\multicolumn{3}{l}{\\textbf{Strong Detectors}} \\\\ \n"
+    else:
+        s += " \\\\ \n"
+
+
+st.code(s, language="python")
 
 
 st.header("RImgNet")
@@ -182,20 +212,25 @@ for m in l_model:
 df = pd.DataFrame(df)
 l_col = [
     "model",
-    "cars_clean_auc",
-    "cars_affine_auc",
-    "cars_colorV1_auc",
+    # "cars_clean_auc",
+    # "cars_affine_auc",
+    # "cars_colorV1_auc",
     "fgvc_clean_auc",
-    "fgvc_affine_auc",
+    "fgvc_affineV2_auc",
     "fgvc_colorV1_auc",
     "flowers_clean_auc",
-    "flowers_affine_auc",
+    "flowers_affineV2_auc",
     "flowers_colorV1_auc",
-    "cars_clean_rank",
-    "cars_stylegan2ada_z16_mh_rank",
+    "eurosat_clean_auc",
+    "eurosat_affineV2_auc",
+    "eurosat_colorV1_auc",
+    # "cars_clean_rank",
+    # "cars_stylegan2ada_z16_mh_rank",
     "fgvc_clean_rank",
-    "fgvc_stylegan2ada_z16_mh_rank",
+    "fgvc_pgstylegan2_z16_mh_rank",
     "flowers_clean_rank",
-    "flowers_stylegan2ada_z16_mh_rank",
+    "flowers_pgstylegan2_z16_mh_rank",
+    "eurosat_clean_rank",
+    "eurosat_pgstylegan2_z16_mh_rank",
 ]
 st.table(df[l_col])

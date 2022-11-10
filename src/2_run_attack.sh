@@ -6,13 +6,14 @@ CFG_DET=configs/cifar_detectors
 # THREAT=affine
 # THREAT=stylegan2_mh
 # for DATASET in svhn celeba ;
-for DATASET in celeba ;
+for DATASET in svhn celeba ;
 do
 # for threat in stylegan2ada_z16_lgv stylegan2ada_z32_mh stylegan2ada_z64_mh stylegan2ada_z512_mh;
 # for threat in stylegan2ada_z16_lgv stylegan2ada_z32_lgv stylegan2ada_z64_lgv stylegan2ada_z512_lgv;
 # for threat in stylegan2ada_z16_mh;
 # for threat in affineV1_mh colorV2_mh;
-for threat in affineV1_random colorV1_random;
+# for threat in affineV1_random colorV1_random;
+for threat in pgstylegan2_z16_random stylegan2_z16_random;
 do
     THREAT=${threat}
     split=4

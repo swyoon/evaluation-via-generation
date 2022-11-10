@@ -1,0 +1,37 @@
+advdist:
+  name: adstylegan2
+  stylegan2_g:
+    arch: stylegan2_g
+    identifier: svhn_projgan/stylegan2_z16
+    config_file: generator.yml
+    ckpt_file: G_ema.pth
+  sampler: 
+    name: mh
+    stepsize: 0.1
+    n_step: 2000
+    bound: spherical
+    T: 1
+    initial_dist: uniform_sphere
+    sample_shape: [16]
+  truncation_psi: 0.5
+  truncation_cutoff: 4
+  blackbox: True
+data:
+  indist_val:
+    dataset: CIFAR10_OOD 
+    path: datasets
+    split: validation 
+    batch_size: 128
+    n_workers: 4
+  indist_test:
+    dataset: CIFAR10_OOD 
+    path: datasets
+    batch_size: 128
+    n_workers: 4
+    split: evaluation 
+  out_eval:
+    dataset: SVHN_OOD 
+    path: datasets
+    split: evaluation 
+    batch_size: 500 
+    n_workers: 4
