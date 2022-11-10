@@ -54,15 +54,15 @@ parser.add_argument(
     choices=["training", "validation", "evaluation", "training_full"],
     default="evaluation",
 )
+parser.add_argument("--n_sample", type=int, help="number of samples", default=400)
+parser.add_argument("--normalize", action="store_true", default=False)
 args, unknown = parser.parse_known_args()
-d_cmd_cfg = parse_unknown_args(unknown)
-d_cmd_cfg = parse_nested_args(d_cmd_cfg)
 
 
 """load model"""
 device = f"cuda:{args.device}"
 cfg_detector = OmegaConf.load(args.config)
-model = get_detector(**cfg_detector, device=device, normalize=False)
+model = get_detector(**cfg_detector, device=device, normalize=args.normalize)
 
 """output directory setting"""
 result_dir = os.path.join("results", args.dataset.split("_")[0], cfg_detector.alias)
@@ -94,7 +94,7 @@ for ood_name in l_ood:
     data_dict_ = copy.copy(data_dict)
     data_dict_["dataset"] = ood_name
     data_dict_["split"] = args.out_split
-    dl = get_dataloader(data_dict_)
+    dl = get_dataloader(data_dict_, subset=range(0, args.n_sample))
     dl.name = ood_name
     l_ood_dl.append(dl)
 
