@@ -46,7 +46,23 @@ parser.add_argument(
     "--outlier",
     type=str,
     help="select outlier manifold",
-    choices=["svhn_affineV1", "celeba_colorV1"],
+    choices=[
+        "svhn_affineV1",
+        "svhn_colorV1",
+        "svhn_pgstylegan2_z16",
+        "celeba_colorV1",
+        "celeba_affineV1",
+        "celeba_pgstylegan2_z16",
+        "fgvc_affineV2",
+        "fgvc_colorV1",
+        "fgvc_pgstylegan2_z16",
+        "flowers_affineV2",
+        "flowers_colorV1",
+        "flowers_pgstylegan2_z16",
+        "eurosat_affineV2",
+        "eurosat_colorV1",
+        "eurosat_pgstylegan2_z16",
+    ],
     required=True,
 )
 parser.add_argument("--device", default=0)
@@ -92,7 +108,7 @@ if args.ensemble == "V1":
 else:
     raise NotImplementedError
 
-attack_basename = f"{args.outlier}_ensemble{args.ensemble}"
+attack_basename = f"{args.outlier}_e{args.ensemble}"
 
 
 """prepare result directory"""
@@ -120,7 +136,6 @@ l_sample_z = []
 l_score = []
 for manifold in l_manifold:
     for attack in l_attack:
-        print(f"Ensemble {manifold} {attack}")
         if manifold is not None:
             each_result_dir = os.path.join(
                 result_dir, f"{args.outlier}_{manifold}_{attack}"
@@ -133,6 +148,7 @@ for manifold in l_manifold:
             if not os.path.exists(each_result_dir):
                 print(f"{each_result_dir} does not exist. Proceed with next attack")
                 continue
+            print(f"{each_result_dir}")
 
         rank = torch.tensor(torch.load(os.path.join(each_result_dir, "rank.pkl")))
         sample = torch.load(os.path.join(each_result_dir, "sample.pkl"))
@@ -178,6 +194,7 @@ torch.save(sample_x, os.path.join(ensemble_dir, "sample_x_all.pkl"))
 torch.save(sample_z, os.path.join(ensemble_dir, "sample_z_all.pkl"))
 torch.save(score, os.path.join(ensemble_dir, "score_all.pkl"))
 print("Saved all intermediate results")
+print("Min Rank:", min_rank.min().item())
 
 
 """print auc """
@@ -189,5 +206,6 @@ in_test_score = torch.load(
 )
 auc = roc_btw_arr(min_score, in_test_score)
 print("AUC:", auc)
-with open(os.path.join(ensemble_dir, f"auc_{args.idx}.txt"), "w") as f:
+with open(os.path.join(ensemble_dir, f"auc.txt"), "w") as f:
     f.write(str(auc))
+print(f'saved at {os.path.join(ensemble_dir, f"auc.txt")}')

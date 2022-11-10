@@ -12,6 +12,8 @@ import torch
 
 st.set_page_config(layout="wide")
 
+############## CIFAR 10 ##############
+
 st.header("CIFAR10")
 
 l_model = [
@@ -34,13 +36,13 @@ l_model = [
 ]
 l_variation = [
     "svhn_clean",
-    "svhn_affineV1_mh",
-    "svhn_colorV2_mh",
-    "svhn_stylegan2ada_z16_mh",
+    "svhn_affineV1_eV1",
+    "svhn_colorV1_eV1",
+    "svhn_pgstylegan2_z16_eV1",
     "celeba_clean",
-    "celeba_affineV1_mh",
-    "celeba_colorV2_mh",
-    "celeba_stylegan2ada_z16_mh",
+    "celeba_affineV1_eV1",
+    "celeba_colorV1_eV1",
+    "celeba_pgstylegan2_z16_eV1",
     # "svhn_stylegan2ada_z32_mh",
     # "svhn_stylegan2ada_z512_mh",
     # "svhn_linf",
@@ -52,6 +54,9 @@ clean_dir = "../results/CIFAR10/"
 
 df = {"model": []}
 for variation in l_variation:
+    if variation.endswith("_eV1"):
+        variation = variation[:-4]
+
     df[variation + "_auc"] = []
     df[variation + "_rank"] = []
 
@@ -60,6 +65,10 @@ for m in l_model:
     df["model"].append(m)
 
     for variation in l_variation:
+        if variation.endswith("_eV1"):
+            variation_ = variation
+            variation = variation[:-4]
+
         if variation == "svhn_clean":
             result_file = os.path.join(clean_dir, m, f"SVHN_OOD.txt")
             with open(result_file, "r") as f:
@@ -85,7 +94,7 @@ for m in l_model:
             df[variation + "_auc"].append(auc)
             df[variation + "_rank"].append(rank)
         else:
-            leaf_dir = os.path.join(result_dir, m, m, variation)
+            leaf_dir = os.path.join(result_dir, m, m, variation_)
             try:
                 rank = torch.load(os.path.join(leaf_dir, "rank.pkl"))
                 score = torch.load(os.path.join(leaf_dir, "score.pkl"))
@@ -104,16 +113,16 @@ l_col = [
     "model",
     "svhn_clean_auc",
     # "svhn_linf_auc",
-    "svhn_affineV1_mh_auc",
-    "svhn_colorV2_mh_auc",
+    "svhn_affineV1_auc",
+    "svhn_colorV1_auc",
     "celeba_clean_auc",
     # "celeba_linf_auc",
-    "celeba_affineV1_mh_auc",
-    "celeba_colorV2_mh_auc",
+    "celeba_affineV1_auc",
+    "celeba_colorV1_auc",
     "svhn_clean_rank",
-    "svhn_stylegan2ada_z16_mh_rank",
+    "svhn_pgstylegan2_z16_rank",
     "celeba_clean_rank",
-    "celeba_stylegan2ada_z16_mh_rank",
+    "celeba_pgstylegan2_z16_rank",
 ]
 st.table(df[l_col])
 
@@ -145,20 +154,24 @@ st.code(s, language="python")
 
 
 st.header("RImgNet")
-l_model = ["prood", "vit_hf_md"]
+l_model = ["msp", "oe", "prood", "vit_hf_md"]
 l_variation = [
-    "cars_clean",
-    "cars_affine",
-    "cars_colorV1",
-    "cars_stylegan2ada_z16_mh",
+    # "cars_clean",
+    # "cars_affine",
+    # "cars_colorV1",
+    # "cars_stylegan2ada_z16_mh",
     "fgvc_clean",
-    "fgvc_affine",
-    "fgvc_colorV1",
-    "fgvc_stylegan2ada_z16_mh",
+    "fgvc_affineV2_eV1",
+    "fgvc_colorV1_eV1",
+    "fgvc_pgstylegan2_z16_eV1",
     "flowers_clean",
-    "flowers_affine",
-    "flowers_colorV1",
-    "flowers_stylegan2ada_z16_mh",
+    "flowers_affineV2_eV1",
+    "flowers_colorV1_eV1",
+    "flowers_pgstylegan2_z16_eV1",
+    "eurosat_clean",
+    "eurosat_affineV2_eV1",
+    "eurosat_colorV1_eV1",
+    "eurosat_pgstylegan2_z16_eV1",
 ]
 
 result_dir = "../results/RImgNet/pairwise/"
@@ -166,6 +179,9 @@ clean_dir = "../results/RImgNet/"
 
 df = {"model": []}
 for variation in l_variation:
+    if variation.endswith("_eV1"):
+        variation = variation[:-4]
+
     df[variation + "_auc"] = []
     df[variation + "_rank"] = []
 
@@ -173,6 +189,10 @@ for m in l_model:
     df["model"].append(m)
 
     for variation in l_variation:
+        if variation.endswith("_eV1"):
+            variation_ = variation
+            variation = variation[:-4]
+
         if variation.endswith("_clean"):
             dataset_name = variation.split("_")[0]
             if dataset_name == "cars":
@@ -181,21 +201,29 @@ for m in l_model:
                 dataset_name = "FGVC"
             elif dataset_name == "flowers":
                 dataset_name = "Flowers"
+            elif dataset_name == "eurosat":
+                dataset_name = "EuroSAT"
             else:
                 raise ValueError
             result_file = os.path.join(clean_dir, m, f"{dataset_name}.txt")
-            with open(result_file, "r") as f:
-                auc = float(f.readline().strip())
+            try:
+                with open(result_file, "r") as f:
+                    auc = float(f.readline().strip())
 
-            rank = (
-                torch.load(os.path.join(clean_dir, m, f"OOD_rank_{dataset_name}.pkl"))
-                .min()
-                .item()
-            )
+                rank = (
+                    torch.load(
+                        os.path.join(clean_dir, m, f"OOD_rank_{dataset_name}.pkl")
+                    )
+                    .min()
+                    .item()
+                )
+            except FileNotFoundError:
+                auc = -1
+                rank = -1
             df[variation + "_auc"].append(auc)
             df[variation + "_rank"].append(rank)
         else:
-            leaf_dir = os.path.join(result_dir, m, m, variation)
+            leaf_dir = os.path.join(result_dir, m, m, variation_)
             try:
                 rank = torch.load(os.path.join(leaf_dir, "rank.pkl"))
                 score = torch.load(os.path.join(leaf_dir, "score.pkl"))
@@ -227,10 +255,34 @@ l_col = [
     # "cars_clean_rank",
     # "cars_stylegan2ada_z16_mh_rank",
     "fgvc_clean_rank",
-    "fgvc_pgstylegan2_z16_mh_rank",
+    "fgvc_pgstylegan2_z16_rank",
     "flowers_clean_rank",
-    "flowers_pgstylegan2_z16_mh_rank",
+    "flowers_pgstylegan2_z16_rank",
     "eurosat_clean_rank",
-    "eurosat_pgstylegan2_z16_mh_rank",
+    "eurosat_pgstylegan2_z16_rank",
 ]
 st.table(df[l_col])
+
+"""generate latex code for table"""
+s = ""
+for i, row in df[l_col].iterrows():
+    if row["model"] == "vit_hf_md":
+        s += f"ViT"
+    else:
+        s += f'{row["model"].upper()}'
+    for j, col in enumerate(l_col[1:]):
+        if col.endswith("auc"):
+            if row[col] == -1:
+                s += f" & "
+            elif row[col] > 0.999:
+                s += "  & " + f"{row[col]:0.3f}"
+            else:
+                s += "  & " + f"{row[col]:0.3f}"[1:]
+        else:
+            s += f"  & {row[col]}"
+
+    else:
+        s += " \\\\ \n"
+
+
+st.code(s, language="python")

@@ -53,6 +53,7 @@ elif args.dataset == "RImgNet":
         "colorV1_random",
         "colorV1_mh",
         "pgstylegan2_z16_random",
+        "pgstylegan2_z16_mh",
     ]
 else:
     raise ValueError("dataset not supported")

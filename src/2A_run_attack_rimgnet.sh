@@ -8,14 +8,16 @@ CFG_DET=configs/rimgnet_detectors
 # for threat in coord affine colorV1 stylegan2_mh;
 # for threat in stylegan2ada_z16_mh stylegan2ada_z32_mh stylegan2ada_z512_mh;
 # for DATASET in flowers cars fgvc;
-for DATASET in fgvc;
+for DATASET in eurosat;
 do
 # for threat in stylegan2ada_z16_lgv stylegan2ada_z32_mh stylegan2ada_z64_mh stylegan2ada_z512_mh;
 # for threat in affineV2_lgv colorV2_lgv;
 # for threat in affineV2_random colorV1_random pgstylegan2_z16_random ;
-# for threat in pgstylegan2_z16_mh;
+# for threat in pgstylegan2_z16_random;
 # for threat in affineV2_mh colorV1_mh pgstylegan2_z16_mh affineV2_random colorV1_random;
-for threat in  colorV1_mh pgstylegan2_z16_mh affineV2_random colorV1_random;
+# for threat in   pgstylegan2_z16_random  colorV1_random;
+for threat in   affineV2_mh  colorV1_mh;
+# for threat in  colorV1_mh pgstylegan2_z16_mh affineV2_random colorV1_random;
 do
     THREAT=${threat}
     split=2

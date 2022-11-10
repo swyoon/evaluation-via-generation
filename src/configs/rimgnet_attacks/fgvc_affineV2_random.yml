@@ -3,11 +3,9 @@ advdist:
   transform: affineV2
   z_bound: [0, 1]
   sampler: 
-    name: mh 
-    stepsize: 0.1
+    name: random 
     n_step: 2000
     bound: [0, 1]
-    T: 1
     initial_dist: uniform
     sample_shape: [5]
   blackbox: True 
