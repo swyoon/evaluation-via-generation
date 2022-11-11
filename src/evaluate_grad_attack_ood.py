@@ -23,6 +23,7 @@ from torch.utils import data
 
 from attacks import get_detector
 from attacks.grad_based_attacks import batch_attack
+from gpu_utils import AutoGPUAllocation
 from loader import get_dataloader
 from models import get_model, load_pretrained
 from utils import batch_run, mkdir_p, parse_nested_args, parse_unknown_args, roc_btw_arr
@@ -60,7 +61,14 @@ args, unknown = parser.parse_known_args()
 
 
 """load model"""
-device = f"cuda:{args.device}"
+if args.device == "cpu":
+    device = f"cpu"
+elif args.device == "auto":
+    gpu_allocation = AutoGPUAllocation()
+    device = gpu_allocation.device
+else:
+    device = f"cuda:{args.device}"
+
 cfg_detector = OmegaConf.load(args.config)
 model = get_detector(**cfg_detector, device=device, normalize=args.normalize)
 
@@ -122,5 +130,5 @@ for ood_name, dl in zip(l_ood, l_ood_dl):
     aauc = roc_btw_arr(attacked_out_pred, in_pred)
     with open(os.path.join(result_dir, f"{ood_name}_AAUC.txt"), "w") as f:
         # f.write("auc: " + str(auc) + ", aauc: " + str(aauc))
-        f.write("aauc: " + str(aauc))
+        f.write(str(aauc))
     print(ood_name, auc, aauc)
