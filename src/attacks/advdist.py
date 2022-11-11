@@ -536,13 +536,22 @@ class AdversarialDistributionTransform:
         if transform == "affineV0":
             self.D = 5
             self.transform = functools.partial(
-                apply_affine_batch,
+                apply_affine_kornia,
                 a_bound=(-45, 45),
                 tx_bound=(-10, 10),
                 ty_bound=(-10, 10),
                 scale_bound=(0.9, 1.5),
-                shear_bound=(-30, 30),
+                shear_bound=(-1 / np.sqrt(3), 1 / np.sqrt(3)),
             )
+            # self.transform = functools.partial(
+            #     apply_affine_batch,
+            #     a_bound=(-45, 45),
+            #     tx_bound=(-10, 10),
+            #     ty_bound=(-10, 10),
+            #     scale_bound=(0.9, 1.5),
+            #     shear_bound=(-30, 30),
+            # )
+
         elif transform == "affineV1":  # kornia-based implementation
             self.D = 5
             self.transform = functools.partial(
@@ -565,6 +574,19 @@ class AdversarialDistributionTransform:
                 scale_bound=(0.9, 1.5),
                 shear_bound=(-1 / np.sqrt(3), 1 / np.sqrt(3)),
             )
+        elif transform == "affineV3":
+            # kornia-based implementation
+            # adjusted for RImgNet
+            self.D = 5
+            self.transform = functools.partial(
+                apply_affine_kornia,
+                a_bound=(-45, 45),
+                tx_bound=(-70, 70),  # approx 30%
+                ty_bound=(-70, 70),
+                scale_bound=(0.9, 1.5),
+                shear_bound=(-1 / np.sqrt(3), 1 / np.sqrt(3)),
+            )
+
         elif transform == "colorV0":
             self.D = 4
             self.transform = functools.partial(

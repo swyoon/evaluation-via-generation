@@ -2,14 +2,12 @@
 
 # evaluation of adversarial samples
 # pairwise
-device=1
-dataset=svhn
+device=3
+dataset=celeba
 # dataset=cars
 
-# in_dataset=CIFAR10
-# in_dataset_lower=cifar
-in_dataset=RImgNet
-in_dataset_lower=rimgnet
+in_dataset=CIFAR10
+in_dataset_lower=cifar
 
 # variation=coord
 # variation=colorV2_mh
@@ -25,12 +23,11 @@ if [ $mode = single ]
 then
 
 # for variation in affineV1_random colorV1_random
-for dataset in fgvc flowers eurosat 
-do
-for variation in pgstylegan2_z16_random affineV2_random colorV1_random affineV2_mh colorV1_mh pgstylegan2_z16_mh
+for variation in pgstylegan2_z16_mh affineV1_mh colorV1_mh
 do
     echo $variation
     # for model in due  
+    # for model in ae pixelcnn nae good acet ceda ssd md oe csi sngp atom rowl csi prood vit_hf_md
     for model in prood vit_hf_md
     # for model in glow
     # for model in nae good acet ceda ssd md oe csi sngp atom rowl csi prood vit_hf_md
@@ -49,7 +46,6 @@ do
                 --device ${device} \
                 --in-dataset ${in_dataset} 
     done
-done
 done
 
 else

@@ -41,10 +41,11 @@ done
 # ood=Cars,Flowers,FGVC
 # ood=dtd
 # ood=OpenImages-O,EuroSAT
-ood=FGVC,Flowers,EuroSAT
-# configs=(rimgnet_prood.yml)
+# ood=FGVC,Flowers,EuroSAT
+ood=EuroSAT
+configs=(rimgnet_vit_hf_md.yml)
 # configs=( rimgnet_vit_hf_md.yml rimgnet_prood.yml )
-configs=( rimgnet_plain.yml rimgnet_oe.yml )
+# configs=( rimgnet_plain.yml rimgnet_oe.yml )
 # configs=()
 for config in "${configs[@]}"; do
    echo ${config}

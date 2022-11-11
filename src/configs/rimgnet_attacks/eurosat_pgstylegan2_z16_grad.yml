@@ -1,0 +1,39 @@
+advdist:
+  name: adstylegan2
+  stylegan2_g:
+    arch: stylegan2_g
+    identifier: eurosat_projgan/stylegan2_z16
+    config_file: generator.yml
+    ckpt_file: G_ema.pth
+  sampler: 
+    name: langevin
+    stepsize: 0.01
+    noise_std: 0
+    n_step: 2000
+    bound: spherical
+    mh: False
+    T: 1
+    initial_dist: uniform_sphere
+    sample_shape: [16]
+  truncation_psi: 0.9
+  resize: 224
+  blackbox: False 
+data:
+  indist_val:
+    dataset: RImgNet 
+    path: datasets
+    split: validation 
+    batch_size: 128
+    n_workers: 4
+  indist_test:
+    dataset: RImgNet 
+    path: datasets
+    batch_size: 128
+    n_workers: 4
+    split: evaluation 
+  out_eval:
+    dataset: EuroSAT 
+    path: datasets
+    split: evaluation 
+    batch_size: 500 
+    n_workers: 4

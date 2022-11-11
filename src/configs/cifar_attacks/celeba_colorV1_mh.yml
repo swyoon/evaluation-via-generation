@@ -1,15 +1,15 @@
 advdist:
   name: adtr
-  transform: affineV1
+  transform: colorV1 
   z_bound: [0, 1]
-  sampler: 
+  sampler:
     name: mh
+    T: 1
     stepsize: 0.1
     n_step: 2000
-    bound: [0, 1]
-    T: 1
+    bound: [0, 1] 
     initial_dist: uniform
-    sample_shape: [5]
+    sample_shape: [4]
   blackbox: True
 data:
   indist_val:

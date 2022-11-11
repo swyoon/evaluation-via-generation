@@ -156,7 +156,10 @@ for manifold in l_manifold:
         sample_z = torch.load(os.path.join(each_result_dir, "sample_z.pkl"))
         score = torch.load(os.path.join(each_result_dir, "score.pkl"))
 
-        assert len(rank) == len(sample) == len(sample_x) == len(sample_z) == len(score)
+        if not args.outlier.endswith("pgstylegan2_z16"):
+            assert (
+                len(rank) == len(sample) == len(sample_x) == len(sample_z) == len(score)
+            )
 
         l_rank.append(rank)
         l_sample.append(sample)
@@ -164,18 +167,34 @@ for manifold in l_manifold:
         l_sample_z.append(sample_z)
         l_score.append(score)
 
-rank = torch.stack(l_rank, dim=0)
-sample = torch.stack(l_sample, dim=0)
-sample_x = torch.stack(l_sample_x, dim=0)
-sample_z = torch.stack(l_sample_z, dim=0)
-score = torch.stack(l_score, dim=0)  # this is unnormalized score
+if not args.outlier.endswith("pgstylegan2_z16"):
+    rank = torch.stack(l_rank, dim=0)
+    sample = torch.stack(l_sample, dim=0)
+    sample_x = torch.stack(l_sample_x, dim=0)
+    sample_z = torch.stack(l_sample_z, dim=0)
+    score = torch.stack(l_score, dim=0)  # this is unnormalized score
 
-min_score, min_idx = torch.min(score, dim=0)
+    min_score, min_idx = torch.min(score, dim=0)
 
-min_rank = rank[min_idx, torch.arange(len(rank[0]))]
-min_sample = sample[min_idx, torch.arange(len(sample[0]))]
-min_sample_x = sample_x[min_idx, torch.arange(len(sample_x[0]))]
-min_sample_z = sample_z[min_idx, torch.arange(len(sample_z[0]))]
+    min_rank = rank[min_idx, torch.arange(len(rank[0]))]
+    min_sample = sample[min_idx, torch.arange(len(sample[0]))]
+    min_sample_x = sample_x[min_idx, torch.arange(len(sample_x[0]))]
+    min_sample_z = sample_z[min_idx, torch.arange(len(sample_z[0]))]
+
+else:  # unconditional outlier manifold case: just aggregate all samples
+    rank = torch.cat(l_rank, dim=0)
+    sample = torch.cat(l_sample, dim=0)
+    sample_x = torch.cat(l_sample_x, dim=0)
+    sample_z = torch.cat(l_sample_z, dim=0)
+    score = torch.cat(l_score, dim=0)  # this is unnormalized score
+
+    # min_score, min_idx = torch.min(score, dim=0)
+    min_score = score
+
+    min_rank = rank
+    min_sample = sample
+    min_sample_x = sample_x
+    min_sample_z = sample_z
 
 
 """save result"""

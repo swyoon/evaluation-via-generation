@@ -21,6 +21,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from attacks import Detector, EnsembleDetector, get_detector
 from augmentations import get_composed_augmentations
+from gpu_utils import AutoGPUAllocation
 from loader import get_dataloader
 from models import get_model, load_pretrained
 from utils import batch_run, mkdir_p, parse_nested_args, parse_unknown_args, roc_btw_arr
@@ -55,6 +56,9 @@ d_cmd_cfg = parse_nested_args(d_cmd_cfg)
 print(d_cmd_cfg)
 if args.device == "cpu":
     device = f"cpu"
+elif args.device == "auto":
+    gpu_allocation = AutoGPUAllocation()
+    device = gpu_allocation.device
 else:
     device = f"cuda:{args.device}"
 
@@ -164,4 +168,5 @@ torch.save(z_saved_samples, out_z_path)
 sorted_in_score = np.sort(in_test_score)
 out_rank = np.searchsorted(sorted_in_score, out_score)
 torch.save(out_rank, os.path.join(result_dir, f"rank.pkl"))
+print(f"min rank {out_rank.min()}")
 print("save OOD score of all samples", out_score_path)

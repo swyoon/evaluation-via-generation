@@ -16,15 +16,16 @@ do
 # for threat in pgstylegan2_z16_random;
 # for threat in affineV2_mh colorV1_mh pgstylegan2_z16_mh affineV2_random colorV1_random;
 # for threat in   pgstylegan2_z16_random  colorV1_random;
-for threat in   affineV2_mh  colorV1_mh;
+# for threat in     colorV1_mh colorV1_random;
 # for threat in  colorV1_mh pgstylegan2_z16_mh affineV2_random colorV1_random;
+for threat in  pgstylegan2_z32_mh;
 do
     THREAT=${threat}
     split=2
 
     # for model in acet ae ceda csi glow good md nae oe pixelcnn ssd;
     # for model in prood;
-    for model in prood vit_hf_md ;
+    for model in vit_hf_md ;
     do
         for ((idx=0;idx<split;idx++)); do
         echo $model
@@ -33,9 +34,10 @@ do
             --detector ${CFG_DET}/rimgnet_${model}.yml \
             --logdir results/ \
             --run run \
-            --n_sample 400 --split ${split} --idx ${idx} \
+            --n_sample 200 --split ${split} --idx ${idx} \
             --device auto  \
-            --data.out_eval.batch_size 200"
+            --data.out_eval.batch_size 100" 
+            # --advdist.sampler.n_step 1000"
             # --device $((idx))  \
 
         echo ${cmd}

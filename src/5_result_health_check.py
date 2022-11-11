@@ -43,9 +43,10 @@ if args.dataset == "CIFAR10":
         "colorV1_random",
         "colorV1_mh",
         "pgstylegan2_z16_random",
+        "pgstylegan2_z16_mh",
     ]
 elif args.dataset == "RImgNet":
-    l_models = ["prood", "vit_hf_md"]
+    l_models = ["msp", "oe", "prood", "vit_hf_md"]
     l_ood = ["fgvc", "flowers", "eurosat"]
     l_attack = [
         "affineV2_random",
@@ -99,7 +100,7 @@ print()
 for model in l_models:
     print("Model: {}".format(model))
     model_dir = os.path.join(root, args.dataset, "pairwise", model, model)
-    assert os.path.exists(model_dir), f"{model} result directory does not exist"
+    assert os.path.exists(model_dir), f"{model_dir} result directory does not exist"
     l_result_dir = [
         s
         for s in os.listdir(model_dir)

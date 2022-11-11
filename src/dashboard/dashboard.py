@@ -6,6 +6,7 @@ streamlit run dashboard.py --server.port 8890 --server.address 0.0.0.0
 
 import os
 
+import numpy as np
 import pandas as pd
 import streamlit as st
 import torch
@@ -126,6 +127,23 @@ l_col = [
 ]
 st.table(df[l_col])
 
+mat = df[l_col].iloc[3:, 1:].values
+st.text(mat.shape)
+max_idx = np.argmax(mat, axis=0)
+min_idx = np.argmin(mat, axis=0)
+
+
+def highlight(i, j, s):
+    if i - 3 == max_idx[j - 1]:
+        return "\\textbf{" + f"{s}" + "}"
+    elif i - 3 == min_idx[j - 1]:
+        return "\\underline{" + f"{s}" + "}"
+    else:
+        return s
+
+
+st.text(max_idx)
+
 """generate latex code for table"""
 s = ""
 for i, row in df[l_col].iterrows():
@@ -138,11 +156,11 @@ for i, row in df[l_col].iterrows():
             if row[col] == -1:
                 s += f" & "
             elif row[col] > 0.999:
-                s += "  & " + f"{row[col]:0.3f}"
+                s += "  & " + highlight(i, j, f"{row[col]:0.3f}")
             else:
-                s += "  & " + f"{row[col]:0.3f}"[1:]
+                s += "  & " + highlight(i, j, f"{row[col]:0.3f}"[1:])
         else:
-            s += f"  & {row[col]}"
+            s += f"  & " + highlight(i, j, f"{row[col]}")
 
     if i == 2:
         s += " \\\\ \n    \\midrule   \\multicolumn{3}{l}{\\textbf{Strong Detectors}} \\\\ \n"
@@ -255,13 +273,34 @@ l_col = [
     # "cars_clean_rank",
     # "cars_stylegan2ada_z16_mh_rank",
     "fgvc_clean_rank",
+    "fgvc_affineV2_rank",
+    "fgvc_colorV1_rank",
     "fgvc_pgstylegan2_z16_rank",
     "flowers_clean_rank",
+    "flowers_affineV2_rank",
+    "flowers_colorV1_rank",
     "flowers_pgstylegan2_z16_rank",
     "eurosat_clean_rank",
+    "eurosat_affineV2_rank",
+    "eurosat_colorV1_rank",
     "eurosat_pgstylegan2_z16_rank",
 ]
 st.table(df[l_col])
+
+mat = df[l_col].iloc[:, 1:].values.astype(float)
+st.text(mat.shape)
+max_idx = np.argmax(mat, axis=0)
+min_idx = np.argmin(mat, axis=0)
+
+
+def highlight(i, j, s):
+    if i == max_idx[j - 1]:
+        return "\\textbf{" + f"{s}" + "}"
+    elif i == min_idx[j - 1]:
+        return "\\underline{" + f"{s}" + "}"
+    else:
+        return s
+
 
 """generate latex code for table"""
 s = ""
@@ -275,11 +314,11 @@ for i, row in df[l_col].iterrows():
             if row[col] == -1:
                 s += f" & "
             elif row[col] > 0.999:
-                s += "  & " + f"{row[col]:0.3f}"
+                s += "  & " + highlight(i, j, f"{row[col]:0.3f}")
             else:
-                s += "  & " + f"{row[col]:0.3f}"[1:]
+                s += "  & " + highlight(i, j, f"{row[col]:0.3f}"[1:])
         else:
-            s += f"  & {row[col]}"
+            s += f"  & " + highlight(i, j, f"{row[col]}")
 
     else:
         s += " \\\\ \n"

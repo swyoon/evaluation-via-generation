@@ -214,3 +214,7 @@ print("AUC:", auc)
 with open(os.path.join(logdir, f"auc_{args.idx}.txt"), "w") as f:
     f.write(str(auc))
 torch.save(out_score, out_file_score)
+
+sorted_in_score = np.sort(in_test_score)
+out_rank = np.searchsorted(sorted_in_score, out_score)
+print(f"{out_rank.min()}")

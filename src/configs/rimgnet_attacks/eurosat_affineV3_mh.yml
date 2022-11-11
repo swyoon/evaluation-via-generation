@@ -1,33 +1,33 @@
 advdist:
   name: adtr
-  transform: affineV1
+  transform: affineV3
   z_bound: [0, 1]
   sampler: 
-    name: mh
+    name: mh 
     stepsize: 0.1
     n_step: 2000
     bound: [0, 1]
     T: 1
     initial_dist: uniform
     sample_shape: [5]
-  blackbox: True
+  blackbox: True 
 data:
   indist_val:
-    dataset: CIFAR10_OOD 
+    dataset: RImgNet 
     path: datasets
     split: validation 
     batch_size: 128
     n_workers: 4
   indist_test:
-    dataset: CIFAR10_OOD 
+    dataset: RImgNet 
     path: datasets
     batch_size: 128
     n_workers: 4
     split: evaluation 
   out_eval:
-    dataset: CelebA_OOD 
+    dataset: EuroSAT 
     path: datasets
     split: evaluation 
     batch_size: 500 
     n_workers: 4
-    size: 32
+    size: 224

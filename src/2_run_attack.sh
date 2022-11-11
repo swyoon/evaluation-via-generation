@@ -6,7 +6,7 @@ CFG_DET=configs/cifar_detectors
 # THREAT=affine
 # THREAT=stylegan2_mh
 # for DATASET in svhn celeba ;
-for DATASET in svhn celeba ;
+for DATASET in  celeba ;
 do
 # for threat in stylegan2ada_z16_lgv stylegan2ada_z32_mh stylegan2ada_z64_mh stylegan2ada_z512_mh;
 # for threat in stylegan2ada_z16_lgv stylegan2ada_z32_lgv stylegan2ada_z64_lgv stylegan2ada_z512_lgv;
