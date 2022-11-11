@@ -81,7 +81,8 @@ if args.dataset in {"MNIST_OOD", "FashionMNIST_OOD"}:
     size = 28
     channel = 1
 else:
-    size = 32
+    # size = 32
+    size = 224
     channel = 3
 data_dict = {
     "path": "datasets",
@@ -131,4 +132,7 @@ for ood_name, dl in zip(l_ood, l_ood_dl):
     with open(os.path.join(result_dir, f"{ood_name}_AAUC.txt"), "w") as f:
         # f.write("auc: " + str(auc) + ", aauc: " + str(aauc))
         f.write(str(aauc))
+    with open(os.path.join(result_dir, f"{ood_name}_AUC_subset.txt"), "w") as f:
+        f.write(str(auc))
+
     print(ood_name, auc, aauc)
