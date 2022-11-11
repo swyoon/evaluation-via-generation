@@ -13,7 +13,8 @@ do
 # for threat in stylegan2ada_z16_mh;
 # for threat in affineV1_mh colorV2_mh;
 # for threat in affineV1_random colorV1_random;
-for threat in colorV1_mh ;
+# for threat in colorV1_mh ;
+for threat in pgstylegan2_z16_mh  ;
 do
     THREAT=${threat}
     split=4

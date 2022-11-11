@@ -1,14 +1,17 @@
 #! /bin/bash
 
-CFG_ATT=configs/rimgnet_attacks
-CFG_DET=configs/rimgnet_detectors
-# DATASET=celeba
+# CFG_ATT=configs/rimgnet_attacks
+# CFG_DET=configs/rimgnet_detectors
+CFG_ATT=configs/cifar_attacks
+CFG_DET=configs/cifar_detectors
+INDATASET=cifar
+# DATASET=rimgnet
 # THREAT=affine
 # THREAT=stylegan2_mh
 # for threat in coord affine colorV1 stylegan2_mh;
 # for threat in stylegan2ada_z16_mh stylegan2ada_z32_mh stylegan2ada_z512_mh;
-# for DATASET in celeba ;
-for DATASET in eurosat ;
+for DATASET in svhn ;
+# for DATASET in eurosat ;
 do
 # for threat in stylegan2ada_z16_lgv stylegan2ada_z32_mh stylegan2ada_z64_mh stylegan2ada_z512_mh;
 # for threat in stylegan2ada_z16_lgv stylegan2ada_z32_lgv stylegan2ada_z64_lgv stylegan2ada_z512_lgv;
@@ -27,7 +30,7 @@ do
         echo $model
         # tsp python attack.py --attack ${CFG_ATT}/${DATASET}_${THREAT}.yml \
         cmd="python attack.py --attack ${CFG_ATT}/${DATASET}_${THREAT}.yml \
-            --detector ${CFG_DET}/rimgnet_${model}.yml \
+            --detector ${CFG_DET}/${INDATASET}_${model}.yml \
             --logdir results/ \
             --run psi_${psi} \
             --n_sample 50 --split ${split} --idx ${idx} \
