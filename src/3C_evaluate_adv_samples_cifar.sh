@@ -23,12 +23,12 @@ if [ $mode = single ]
 then
 
 # for variation in affineV1_random colorV1_random
-for variation in pgstylegan2_z16_mh affineV1_mh colorV1_mh
+for variation in pgstylegan2_z16_mh # affineV1_mh colorV1_mh
 do
     echo $variation
     # for model in due  
-    # for model in ae pixelcnn nae good acet ceda ssd md oe csi sngp atom rowl csi prood vit_hf_md
-    for model in prood vit_hf_md
+    for model in ae pixelcnn nae good acet ceda ssd md oe csi sngp atom rowl csi prood vit_hf_md
+    # for model in prood vit_hf_md
     # for model in glow
     # for model in nae good acet ceda ssd md oe csi sngp atom rowl csi prood vit_hf_md
     # for model in sngp atom rowl

@@ -6,7 +6,7 @@ CFG_DET=configs/cifar_detectors
 # THREAT=affine
 # THREAT=stylegan2_mh
 # for DATASET in svhn celeba ;
-for DATASET in  celeba ;
+for DATASET in  svhn ;
 do
 # for threat in stylegan2ada_z16_lgv stylegan2ada_z32_mh stylegan2ada_z64_mh stylegan2ada_z512_mh;
 # for threat in stylegan2ada_z16_lgv stylegan2ada_z32_lgv stylegan2ada_z64_lgv stylegan2ada_z512_lgv;
@@ -19,7 +19,8 @@ do
     THREAT=${threat}
     split=4
 
-    for model in acet ae ceda csi  good md nae atom sngp rowl oe pixelcnn ssd prood vit_hf_md;
+    # for model in acet ae ceda csi  good md nae atom sngp rowl oe pixelcnn ssd prood vit_hf_md;
+    for model in vit_hf_md;
     # for model in sngp atom rowl;
     # for model in prood vit_hf_md ;
     # for model in vit_hf_md ;

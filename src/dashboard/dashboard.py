@@ -39,11 +39,11 @@ l_variation = [
     "svhn_clean",
     "svhn_affineV1_eV1",
     "svhn_colorV1_eV1",
-    "svhn_pgstylegan2_z16_eV1",
+    "svhn_pgstylegan2_z16_mh",
     "celeba_clean",
     "celeba_affineV1_eV1",
     "celeba_colorV1_eV1",
-    "celeba_pgstylegan2_z16_eV1",
+    "celeba_pgstylegan2_z16_mh",
     # "svhn_stylegan2ada_z32_mh",
     # "svhn_stylegan2ada_z512_mh",
     # "svhn_linf",
@@ -57,6 +57,9 @@ df = {"model": []}
 for variation in l_variation:
     if variation.endswith("_eV1"):
         variation = variation[:-4]
+    if variation.endswith("_mh"):
+        variation_ = variation
+        variation = variation[:-3]
 
     df[variation + "_auc"] = []
     df[variation + "_rank"] = []
@@ -69,6 +72,9 @@ for m in l_model:
         if variation.endswith("_eV1"):
             variation_ = variation
             variation = variation[:-4]
+        if variation.endswith("_mh"):
+            variation_ = variation
+            variation = variation[:-3]
 
         if variation == "svhn_clean":
             result_file = os.path.join(clean_dir, m, f"SVHN_OOD.txt")
@@ -116,10 +122,12 @@ l_col = [
     # "svhn_linf_auc",
     "svhn_affineV1_auc",
     "svhn_colorV1_auc",
+    "svhn_pgstylegan2_z16_auc",
     "celeba_clean_auc",
     # "celeba_linf_auc",
     "celeba_affineV1_auc",
     "celeba_colorV1_auc",
+    "celeba_pgstylegan2_z16_auc",
     "svhn_clean_rank",
     "svhn_pgstylegan2_z16_rank",
     "celeba_clean_rank",
@@ -134,15 +142,16 @@ min_idx = np.argmin(mat, axis=0)
 
 
 def highlight(i, j, s):
-    if i - 3 == max_idx[j - 1]:
+    if i - 3 == max_idx[j]:
         return "\\textbf{" + f"{s}" + "}"
-    elif i - 3 == min_idx[j - 1]:
+    elif i - 3 == min_idx[j]:
         return "\\underline{" + f"{s}" + "}"
     else:
         return s
 
 
 st.text(max_idx)
+st.text(min_idx)
 
 """generate latex code for table"""
 s = ""
@@ -294,9 +303,9 @@ min_idx = np.argmin(mat, axis=0)
 
 
 def highlight(i, j, s):
-    if i == max_idx[j - 1]:
+    if i == max_idx[j]:
         return "\\textbf{" + f"{s}" + "}"
-    elif i == min_idx[j - 1]:
+    elif i == min_idx[j]:
         return "\\underline{" + f"{s}" + "}"
     else:
         return s
