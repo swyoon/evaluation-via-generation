@@ -14,13 +14,13 @@ do
 # for threat in affineV1_mh colorV2_mh;
 # for threat in affineV1_random colorV1_random;
 # for threat in colorV1_mh ;
-for threat in pgstylegan2_z16_mh  ;
+for threat in affineV0_mh  ;
 do
     THREAT=${threat}
     split=4
 
     # for model in acet ae ceda csi  good md nae atom sngp rowl oe pixelcnn ssd prood vit_hf_md;
-    for model in vit_hf_md;
+    for model in oe ssd prood vit_hf_md;
     # for model in sngp atom rowl;
     # for model in prood vit_hf_md ;
     # for model in vit_hf_md ;

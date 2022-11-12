@@ -8,7 +8,7 @@ CFG_DET=configs/rimgnet_detectors
 # for threat in coord affine colorV1 stylegan2_mh;
 # for threat in stylegan2ada_z16_mh stylegan2ada_z32_mh stylegan2ada_z512_mh;
 # for DATASET in flowers cars fgvc;
-for DATASET in eurosat;
+for DATASET in flowers fgvc eurosat;
 do
 # for threat in stylegan2ada_z16_lgv stylegan2ada_z32_mh stylegan2ada_z64_mh stylegan2ada_z512_mh;
 # for threat in affineV2_lgv colorV2_lgv;
@@ -17,15 +17,15 @@ do
 # for threat in affineV2_mh colorV1_mh pgstylegan2_z16_mh affineV2_random colorV1_random;
 # for threat in   pgstylegan2_z16_random  colorV1_random;
 # for threat in     colorV1_mh colorV1_random;
-# for threat in  colorV1_mh pgstylegan2_z16_mh affineV2_random colorV1_random;
-for threat in  pgstylegan2_z32_mh;
+for threat in  affineV3_mh
+# for threat in  pgstylegan2_z16_mh;
 do
     THREAT=${threat}
     split=2
 
     # for model in acet ae ceda csi glow good md nae oe pixelcnn ssd;
     # for model in prood;
-    for model in vit_hf_md ;
+    for model in msp oe prood vit_hf_md ;
     do
         for ((idx=0;idx<split;idx++)); do
         echo $model
@@ -34,9 +34,9 @@ do
             --detector ${CFG_DET}/rimgnet_${model}.yml \
             --logdir results/ \
             --run run \
-            --n_sample 200 --split ${split} --idx ${idx} \
+            --n_sample 400 --split ${split} --idx ${idx} \
             --device auto  \
-            --data.out_eval.batch_size 100" 
+            --data.out_eval.batch_size 200" 
             # --advdist.sampler.n_step 1000"
             # --device $((idx))  \
 
