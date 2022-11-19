@@ -147,6 +147,7 @@ class MHSampler:
         initial_dist="uniform",
         writer=None,
         log_interval=100,
+        mh=True,
     ):
         self.sample_shape = tuple(sample_shape)
         self.n_step = n_step
@@ -157,6 +158,7 @@ class MHSampler:
         self.writer = writer
         self.log_interval = log_interval
         self.initial_dist = initial_dist
+        self.mh = mh
         if rng is None:
             self.rng = np.random.default_rng()
         else:
@@ -192,6 +194,7 @@ class MHSampler:
             rng=self.rng,
             writer=self.writer,
             log_interval=self.log_interval,
+            mh=self.mh,
         )
         return d_sample
 
@@ -236,7 +239,7 @@ class RandomSampler:
     def sample(self, energy, x0=None, n_sample=None, device=None):
         l_x = []
         l_E = []
-        for i in range(n_sample):
+        for i in range(self.n_step):
             x = self.initial_sample(n_sample=n_sample, device=device)
             l_E.append(energy(x).detach().cpu())
             l_x.append(x.detach().cpu())

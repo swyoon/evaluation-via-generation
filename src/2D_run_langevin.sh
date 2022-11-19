@@ -9,18 +9,20 @@ CFG_DET=configs/cifar_detectors
 # THREAT=stylegan2_mh
 for DATASET in svhn ;
 do
-for threat in affineV1_lgv;
+# for threat in affineV0_random affineV0_mh affineV0_lgv;
+for threat in pgstylegan2_z64_randomwalk pgstylegan2_z64_mh pgstylegan2_z64_lgv pgstylegan2_z64_random ;
 do
     THREAT=${threat}
     split=1
 
     # for model in acet ae ceda csi glow good md nae oe pixelcnn ssd;
     # for model in oe;
-    for noise_std in 0.01 0.05 0.1 0.2;
+    # for noise_std in 0.01 0.05 0.1 0.2;
+    for noise_std in 0.01;
     do
-    for repeat in 1;
+    for repeat in 0 1 2 3 4;
     do
-    for model in vit_hf_md ;
+    for model in oe prood vit_hf_md ;
     do
         for ((idx=0;idx<split;idx++)); do
         echo $model
@@ -28,12 +30,12 @@ do
         cmd="python attack.py --attack ${CFG_ATT}/${DATASET}_${THREAT}.yml \
             --detector ${CFG_DET}/cifar_${model}.yml \
             --logdir results/ \
-            --run stepsize_${noise_std}_${repeat} \
-            --n_sample 50 --split ${split} --idx ${idx} \
+            --run benchmark_${repeat} \
+            --n_sample 100 --split ${split} --idx ${idx} \
             --device auto  \
-            --data.out_eval.batch_size 50 \
-            --advdist.sampler.stepsize ${noise_std} \
-            --advdist.sampler.mh False"
+            --data.out_eval.batch_size 100 \
+            --save_intermediate"
+            # --advdist.sampler.stepsize ${noise_std} \
             # --advdist.sampler.noise_std ${noise_std}"
             # --device $((idx))  \
         echo ${cmd}

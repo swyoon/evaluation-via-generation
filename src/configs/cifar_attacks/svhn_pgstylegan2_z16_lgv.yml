@@ -6,16 +6,18 @@ advdist:
     config_file: generator.yml
     ckpt_file: G_ema.pth
   sampler: 
-    name: mh
-    stepsize: 0.1
+    name: langevin
+    noise_std: 0.1
+    clip_langevin_grad: 0.1
     n_step: 2000
     bound: spherical
     T: 1
     initial_dist: uniform_sphere
     sample_shape: [16]
+    mh: True
   truncation_psi: 0.9
   # truncation_cutoff: 4
-  blackbox: True
+  blackbox: False 
 data:
   indist_val:
     dataset: CIFAR10_OOD 

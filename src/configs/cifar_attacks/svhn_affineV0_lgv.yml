@@ -1,21 +1,18 @@
 advdist:
-  name: adstylegan2
-  stylegan2_g:
-    arch: stylegan2_g
-    identifier: svhn_projgan/stylegan2_z16
-    config_file: generator.yml
-    ckpt_file: G_ema.pth
+  name: adtr
+  transform: affineV0
+  z_bound: [0, 1]
   sampler: 
-    name: mh
-    stepsize: 0.1
+    name: langevin
+    noise_std: 0.1
+    clip_langevin_grad: 0.1
     n_step: 2000
-    bound: spherical
+    bound: [0, 1]
     T: 1
-    initial_dist: uniform_sphere
-    sample_shape: [16]
-  truncation_psi: 0.9
-  # truncation_cutoff: 4
-  blackbox: True
+    initial_dist: uniform
+    sample_shape: [5]
+    mh: True
+  blackbox: False
 data:
   indist_val:
     dataset: CIFAR10_OOD 

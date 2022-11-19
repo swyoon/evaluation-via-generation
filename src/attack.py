@@ -39,6 +39,9 @@ parser.add_argument("--logdir", default="results/")
 parser.add_argument("--run", default=None, help="unique run id of the experiment")
 parser.add_argument("--n_sample", type=int, help="number of samples. None means all")
 parser.add_argument(
+    "--save_intermediate", action="store_true", help="save intermediate results"
+)
+parser.add_argument(
     "--idx",
     default=0,
     type=int,
@@ -130,6 +133,8 @@ if args.idx is not None:
     out_file_E = os.path.join(logdir, f"advsample_E_{args.idx}.pkl")
     out_file_score = os.path.join(logdir, f"advsample_score_{args.idx}.pkl")
     out_file_xlast = os.path.join(logdir, f"advsample_xlast_{args.idx}.pkl")
+    out_file_l_E = os.path.join(logdir, f"advsample_l_E_{args.idx}.pkl")
+    out_file_l_z = os.path.join(logdir, f"advsample_l_z_{args.idx}.pkl")
 else:
     out_file_x = os.path.join(logdir, "advsample_x.pkl")
     out_file_z = os.path.join(logdir, "advsample_z.pkl")
@@ -169,17 +174,19 @@ l_sample_x = []
 l_sample_z = []
 l_sample_E = []
 l_sample_xlast = []
+l_sample_l_E = []  # history of E
+l_sample_l_z = []  # history of z
 for i_iter, (x, y) in enumerate(tqdm(outval_dl)):
     x = x.to(device)
     d_sample = advdist.sample(img=x)
-    # x_accept = d_sample['x_accept'].detach().cpu()
-    # z_accept = d_sample['z_accept'].detach().cpu()
-    # l_sample_x.append(x_accept)
-    # l_sample_z.append(z_accept)
     l_sample_x.append(d_sample["min_img"].detach().cpu())
     l_sample_z.append(d_sample["min_x"].detach().cpu())
     l_sample_E.append(d_sample["min_E"].detach().cpu())
     l_sample_xlast.append(d_sample["last_img"].detach().cpu())
+
+    if args.save_intermediate:
+        l_sample_l_E.append(d_sample["l_E"].detach().cpu())
+        l_sample_l_z.append(d_sample["l_x"].detach().cpu())
 
     # save every new batch, to become fault-tolerant
     adv_samples_x = torch.cat(l_sample_x)
@@ -190,6 +197,13 @@ for i_iter, (x, y) in enumerate(tqdm(outval_dl)):
     torch.save(adv_samples_z, out_file_z)
     torch.save(adv_samples_E, out_file_E)
     torch.save(adv_samples_xlast, out_file_xlast)
+
+    if args.save_intermediate:
+        adv_samples_l_E = torch.cat(l_sample_l_E)
+        adv_samples_l_z = torch.cat(l_sample_l_z)
+        torch.save(adv_samples_l_E, out_file_l_E)
+        torch.save(adv_samples_l_z, out_file_l_z)
+
     result_img = make_grid(d_sample["min_img"].detach().cpu(), nrow=8, range=(0, 1))
     writer.add_image(f"min_img", result_img, i_iter)
     result_img = make_grid(d_sample["last_img"].detach().cpu(), nrow=8, range=(0, 1))

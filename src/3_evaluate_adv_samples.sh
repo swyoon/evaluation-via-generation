@@ -3,11 +3,11 @@
 # evaluation of adversarial samples
 # pairwise
 device=1
-dataset=celeba
+dataset=svhn
 # dataset=cars
 
-# in_dataset=CIFAR10
-# in_dataset_lower=cifar
+in_dataset=CIFAR10
+in_dataset_lower=cifar
 # in_dataset=RImgNet
 # in_dataset_lower=rimgnet
 
@@ -17,7 +17,7 @@ dataset=celeba
 # variation=stylegan2ada_mh
 # variation=stylegan2ada_z512_mh
 # mode=pairwise
-mode=single
+mode=pairwise
 
 echo $dataset
 
@@ -51,25 +51,33 @@ done
 
 else
 
+# for variation in affineV2_mh colorV1_mh pgstylegan2_z16_mh; do
+for variation in  pgstylegan2_z16_mh; do
 # for model in vit_hf_md 
-for model in prood 
+# for model in msp oe prood vit_hf_md
+for model in  nae good acet ceda ssd md oe csi sngp atom rowl csi prood vit_hf_md
 # for model in ae pixelcnn glow nae good acet ceda ssd md oe csi 
 # for model in nae good acet ceda ssd md oe csi 
 do
     # for target in nae good acet ceda ssd md atom oe rowl csi 
     # for target in vit_hf_md
-    for target in prood 
+    # for target in msp oe prood vit_hf_md
+    for target in  nae good acet ceda ssd md oe csi sngp atom rowl csi prood vit_hf_md
     do
     # target=${model}
 
-    python evaluate_advdist_pairwise.py \
+    cmd="python evaluate_advdist_pairwise.py \
         --detector configs/${in_dataset_lower}_detectors/${in_dataset_lower}_${model}.yml \
         --target results/${in_dataset}/${target}/${dataset}_${variation}/run/${in_dataset_lower}_${target}_${dataset}_${variation}.yml\
         --logdir results/${in_dataset}/pairwise/${model}/${target}/${dataset}_${variation}\
-        --device ${device} \
-        --in-dataset ${in_dataset} \
+        --device auto \
+        --in-dataset ${in_dataset}" 
+    echo $cmd
+    sleep 0.1s
+    tsp ${cmd}
 
     done
+done
 done
 
 

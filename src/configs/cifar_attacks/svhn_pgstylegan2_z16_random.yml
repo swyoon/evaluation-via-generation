@@ -11,8 +11,7 @@ advdist:
     bound: spherical
     initial_dist: uniform_sphere
     sample_shape: [16]
-  truncation_psi: 0.5
-  truncation_cutoff: 4
+  truncation_psi: 0.9
   blackbox: True
 data:
   indist_val:

@@ -2,19 +2,16 @@ advdist:
   name: adstylegan2
   stylegan2_g:
     arch: stylegan2_g
-    identifier: svhn_projgan/stylegan2_z16
+    identifier: svhn_projgan/stylegan2_z64
     config_file: generator.yml
     ckpt_file: G_ema.pth
   sampler: 
-    name: mh
-    stepsize: 0.1
+    name: random
     n_step: 2000
     bound: spherical
-    T: 1
     initial_dist: uniform_sphere
-    sample_shape: [16]
+    sample_shape: [64]
   truncation_psi: 0.9
-  # truncation_cutoff: 4
   blackbox: True
 data:
   indist_val:

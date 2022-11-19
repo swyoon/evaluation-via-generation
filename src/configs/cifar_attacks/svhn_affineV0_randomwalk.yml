@@ -1,18 +1,17 @@
 advdist:
   name: adtr
-  transform: affineV1
+  transform: affineV0
   z_bound: [0, 1]
   sampler: 
-    name: langevin
-    stepsize: 0.01
-    noise_std: 0.
+    name: mh
+    stepsize: 0.1
     n_step: 2000
     bound: [0, 1]
     T: 1
     initial_dist: uniform
     sample_shape: [5]
     mh: False
-  blackbox: False
+  blackbox: True
 data:
   indist_val:
     dataset: CIFAR10_OOD 

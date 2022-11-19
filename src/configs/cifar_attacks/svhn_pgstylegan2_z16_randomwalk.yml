@@ -13,8 +13,8 @@ advdist:
     T: 1
     initial_dist: uniform_sphere
     sample_shape: [16]
+    mh: False
   truncation_psi: 0.9
-  # truncation_cutoff: 4
   blackbox: True
 data:
   indist_val:

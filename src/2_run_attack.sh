@@ -20,7 +20,8 @@ do
     split=4
 
     # for model in acet ae ceda csi  good md nae atom sngp rowl oe pixelcnn ssd prood vit_hf_md;
-    for model in oe ssd prood vit_hf_md;
+    # for model in oe ssd prood vit_hf_md;
+    for model in acet ceda good sngp atom;
     # for model in sngp atom rowl;
     # for model in prood vit_hf_md ;
     # for model in vit_hf_md ;

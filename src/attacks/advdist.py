@@ -641,7 +641,10 @@ class AdversarialDistributionTransform:
         # energy = functools.partial(self.energy, img=img)
         self.img = img
         d_sample = self.sampler.sample(
-            self.energy, n_sample=len(img), device=img.device
+            self.energy,
+            n_sample=len(img),
+            device=img.device,
+            x0=z0,
         )
 
         # compute minimum energy
